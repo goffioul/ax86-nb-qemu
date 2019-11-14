@@ -1,0 +1,9 @@
+[submodule "capstone"]
+	path = capstone
+	url = https://github.com/goffioul/ax86-nb-qemu-capstone.git
+[submodule "glib"]
+	path = glib
+	url = https://github.com/goffioul/ax86-nb-qemu-glib.git
+[submodule "qemu"]
+	path = qemu
+	url = https://github.com/goffioul/ax86-nb-qemu-qemu.git
