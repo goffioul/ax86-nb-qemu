@@ -82,7 +82,7 @@ static int nb_qemu_unloadLibrary(void *handle)
 static const char *nb_qemu_getError()
 {
     ALOGI("getError");
-    return "unknown";
+    return QemuBridge::get_error();
 }
 
 static bool nb_qemu_isPathSupported(const char *path)

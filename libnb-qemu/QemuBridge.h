@@ -29,6 +29,7 @@ namespace QemuBridge {
     bool is_path_supported(const std::string& path);
     void *load_library(const std::string& filename);
     void *get_trampoline(void *lib_handle, const std::string& name, const std::string& shorty);
+    const char *get_error();
 }
 
 #endif

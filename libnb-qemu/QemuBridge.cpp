@@ -47,12 +47,14 @@ public:
     bool is_path_supported(const std::string& path) const;
     void *load_library(const std::string& filename);
     void *get_trampoline(void *lib_handle, const std::string& name, const std::string& shorty);
+    const char *get_error();
 
 private:
     uint32_t initialize_;
     uint32_t load_library_;
     uint32_t get_library_symbol_;
     uint32_t allocate_thread_;
+    uint32_t get_error_;
 
     std::map<void *, std::shared_ptr<Library>> libraries_;
     std::map<std::string, std::shared_ptr<Library>> named_libraries_;
@@ -72,6 +74,8 @@ bool QemuBridgeImpl::initialize()
         ALOGV("QemuBridge::get_library_symbol_: %p", reinterpret_cast<void *>(get_library_symbol_));
         allocate_thread_ = QemuCore::lookup_symbol("nb_qemu_allocateThread");
         ALOGV("QemuBridge::allocate_thread_: %p", reinterpret_cast<void *>(allocate_thread_));
+        get_error_ = QemuCore::lookup_symbol("nb_qemu_getError");
+        ALOGV("QemuBridge::get_error_: %p", reinterpret_cast<void *>(get_error_));
         if (initialize_) {
             QemuCpu::get()->call(initialize_);
             return true;
@@ -167,6 +171,18 @@ void *QemuBridgeImpl::get_trampoline(void *lib_handle, const std::string& name, 
     return nullptr;
 }
 
+const char *QemuBridgeImpl::get_error()
+{
+  static std::string s_error;
+
+  if (get_error_) {
+      QemuMemory::String q_error(QemuCpu::get()->call(get_error_));
+      s_error = q_error.c_str();
+  }
+
+  return s_error.c_str();
+}
+
 namespace QemuBridge {
 
 bool initialize()
@@ -202,6 +218,11 @@ void *load_library(const std::string& filename)
 void *get_trampoline(void *lib_handle, const std::string& name, const std::string& shorty)
 {
     return impl_->get_trampoline(lib_handle, name, shorty);
+}
+
+const char *get_error()
+{
+  return impl_->get_error();
 }
 
 }
