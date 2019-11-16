@@ -34,12 +34,14 @@
 #include <qemu.h>
 #include <cpu_loop-common.h>
 
+#define QEMU_LOG_MASK "page,unimp"
+
 static uint32_t thread_allocate_;
 static uint32_t thread_deallocate_;
 
 int qemu_android_initialize()
 {
-    char *argv[] = { LOG_TAG, "-d", "page,unimp", "-E", "LD_DEBUG=1", "/system/lib/libnb-qemu-guest.so" };
+    char *argv[] = { LOG_TAG, "-d", QEMU_LOG_MASK, "-E", "LD_DEBUG=1", "/system/lib/libnb-qemu-guest.so" };
     int result = qemu_main(sizeof(argv)/sizeof(char*), argv, NULL);
     if (result == 0) {
         thread_allocate_ = qemu_android_lookup_symbol("nb_qemu_allocateThread");
@@ -210,7 +212,7 @@ void *qemu_android_new_cpu()
         cpu->opaque = ts;
         task_settid(ts);
 
-#define NEW_STACK_SIZE (4 * TARGET_PAGE_SIZE)
+#define NEW_STACK_SIZE (16 * TARGET_PAGE_SIZE)
 #define TLS_SIZE (sizeof(abi_long) * 8)
 
         sp = target_mmap(0, NEW_STACK_SIZE, PROT_READ | PROT_WRITE,
@@ -218,7 +220,7 @@ void *qemu_android_new_cpu()
         LOG_ALWAYS_FATAL_IF(sp == -1, "Failed to allocate temporary");
 
         tlsp = sp + NEW_STACK_SIZE - TLS_SIZE;
-        thrp = tlsp - sizeof(thr);
+        thrp = sp + NEW_STACK_SIZE - TARGET_PAGE_SIZE;
         retp = thrp - 2 * sizeof(abi_long);
         stackp = (retp & ~7);
 
@@ -240,6 +242,7 @@ void *qemu_android_new_cpu()
         env->pc_stop = info->start_code;
 
         ALOGV("Allocating new CPU thread");
+        //qemu_set_log(CPU_LOG_TB_IN_ASM|qemu_str_to_log_mask(QEMU_LOG_MASK));
         env->regs[0] = retp;
         env->regs[1] = retp + sizeof(abi_long);
         env->regs[2] = env->regs[3] = 0;
@@ -247,6 +250,8 @@ void *qemu_android_new_cpu()
         env->regs[15] = thread_allocate_ & ~(target_ulong)1;
         env->thumb = thread_allocate_ & 1;
         cpu_loop(env);
+        //qemu_set_log(qemu_str_to_log_mask(QEMU_LOG_MASK));
+
         if (env->regs[0] == 0) {
             alloc_result = (abi_long *) qemu_android_get_memory(retp, 2 * sizeof(abi_long));
             ALOGV("New CPU thread allocated: stack=%08x, tls=%08x", alloc_result[0], alloc_result[1]);
@@ -291,6 +296,7 @@ void qemu_android_delete_cpu(void *_cpu)
         qemu_android_release_memory(dealloc_result, tp, sizeof(abi_long) * 2);
 
         ALOGV("Deallocating CPU thread");
+        //qemu_set_log(CPU_LOG_TB_IN_ASM|qemu_str_to_log_mask(QEMU_LOG_MASK));
         env->regs[0] = stackp;
         env->regs[1] = sizep;
         env->regs[2] = env->regs[3] = 0;
@@ -298,6 +304,7 @@ void qemu_android_delete_cpu(void *_cpu)
         env->regs[15] = thread_deallocate_ & ~(target_ulong)1;
         env->thumb = thread_deallocate_ & 1;
         cpu_loop(env);
+        //qemu_set_log(qemu_str_to_log_mask(QEMU_LOG_MASK));
 
         dealloc_result = (abi_long *) qemu_android_get_memory(tp, sizeof(abi_long) * 2);
         ALOGV("CPU thread deallocation result: stack=%08x, size=%08x", dealloc_result[0], dealloc_result[1]);
