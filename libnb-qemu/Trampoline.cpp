@@ -136,6 +136,17 @@ Trampoline::Trampoline(const std::string& name, uint32_t address, const std::str
           argtypes_[1] = &ffi_type_pointer;
           nargs_ = 2;
       }
+      else if (name == "ANativeActivity_onCreate") {
+          rtype_ = &ffi_type_void;
+          argtypes_ = reinterpret_cast<ffi_type **>(calloc(sizeof(ffi_type *), 3));
+          argtypes_[0] = &ffi_type_pointer;
+          argtypes_[1] = &ffi_type_pointer;
+          argtypes_[2] = &ffi_type_ulong;
+          nargs_ = 3;
+      }
+      else {
+          ALOGE("Cannot create trampoline for unknown function: %s", name.c_str());
+      }
 
       if (rtype_) {
           if (ffi_prep_cif(&cif_, FFI_DEFAULT_ABI, nargs_, rtype_, argtypes_) == FFI_OK) {
