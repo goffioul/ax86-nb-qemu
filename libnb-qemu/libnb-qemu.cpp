@@ -24,6 +24,7 @@
 #include <nativebridge/native_bridge.h>
 #include "QemuBridge.h"
 #include "JavaBridge.h"
+#include "OsBridge.h"
 
 namespace android {
 
@@ -32,6 +33,7 @@ static bool nb_qemu_initialize(const NativeBridgeRuntimeCallbacks* runtime_cbs, 
     ALOGI("initialize");
     if (QemuBridge::initialize()) {
         JavaBridge::initialize(runtime_cbs);
+        OsBridge::initialize();
         return true;
     }
     return false;

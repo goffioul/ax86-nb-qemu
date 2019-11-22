@@ -23,16 +23,7 @@
 
 #include <log/log.h>
 #include "QemuAndroid.h"
-
-#define NEED_CPU_H
-#undef NDEBUG
-
-#include <qemu/osdep.h>
-#include <qemu/guest-random.h>
-#include <disas/disas.h>
-#include <elf.h>
-#include <qemu.h>
-#include <cpu_loop-common.h>
+#include "QemuInclude.h"
 
 #define QEMU_LOG_MASK "page,unimp"
 
@@ -121,6 +112,11 @@ void qemu_android_release_memory(void *ptr, uint32_t addr, size_t length)
 void qemu_android_register_syscall_handler(qemu_android_syscall_handler_t func)
 {
     syscall_handler = func;
+}
+
+void qemu_android_register_svc_handler(qemu_android_svc_handler_t func)
+{
+    svc_handler = func;
 }
 
 static void qemu_android_call_internal(CPUState *cpu, uint32_t addr, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4, char *stack, int stack_size)
