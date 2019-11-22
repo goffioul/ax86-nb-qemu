@@ -165,12 +165,69 @@ DEFINE_WRAPPER(GetVersion)
   return jni_env_->GetVersion();
 }
 
+DEFINE_WRAPPER(DefineClass)
+{
+  QemuMemory::String name(arg1);
+  QemuMemory::Region<jbyte> buf(arg3, arg4);
+  jclass cls = jni_env_->DefineClass(name.c_str(), reinterpret_cast<jobject>(arg2), buf.get(), arg4);
+  ALOGV("DefineClass(%s, %p, %p, %d) => %p", name.c_str(), reinterpret_cast<jobject>(arg2), buf.get(), arg4, cls);
+  QemuMemory::memcpy(arg5, &cls, sizeof(jclass));
+  return 0;
+}
+
 DEFINE_WRAPPER(FindClass)
 {
   QemuMemory::String name(arg1);
   jclass cls = jni_env_->FindClass(name.c_str());
   ALOGV("FindClass(%s) => %p", name.c_str(), cls);
   QemuMemory::memcpy(arg2, &cls, sizeof(jclass));
+  return 0;
+}
+
+DEFINE_WRAPPER(FromReflectedMethod)
+{
+  jmethodID mID = jni_env_->FromReflectedMethod(reinterpret_cast<jobject>(arg1));
+  ALOGV("FromReflectedMethod(%p) => %p", reinterpret_cast<jobject>(arg1), mID);
+  QemuMemory::memcpy(arg2, &mID, sizeof(jmethodID));
+  return 0;
+}
+
+DEFINE_WRAPPER(FromReflectedField)
+{
+  jfieldID fID = jni_env_->FromReflectedField(reinterpret_cast<jobject>(arg1));
+  ALOGV("FromReflectedField(%p) => %p", reinterpret_cast<jobject>(arg1), fID);
+  QemuMemory::memcpy(arg2, &fID, sizeof(jfieldID));
+  return 0;
+}
+
+DEFINE_WRAPPER(ToReflectedMethod)
+{
+  jobject ret = jni_env_->ToReflectedMethod(reinterpret_cast<jclass>(arg1), reinterpret_cast<jmethodID>(arg2), arg3);
+  ALOGV("ToReflectedMethod(%p, %p, %d) => %p", reinterpret_cast<jclass>(arg1), reinterpret_cast<jmethodID>(arg2), arg3, ret);
+  QemuMemory::memcpy(arg4, &ret, sizeof(jobject));
+  return 0;
+}
+
+DEFINE_WRAPPER(GetSuperclass)
+{
+  jclass cls = jni_env_->GetSuperclass(reinterpret_cast<jclass>(arg1));
+  ALOGV("GetSuperclass(%p) => %p", reinterpret_cast<jclass>(arg1), cls);
+  QemuMemory::memcpy(arg2, &cls, sizeof(jclass));
+  return 0;
+}
+
+DEFINE_WRAPPER(IsAssignableFrom)
+{
+  jboolean ret = jni_env_->IsAssignableFrom(reinterpret_cast<jclass>(arg1), reinterpret_cast<jclass>(arg2));
+  ALOGV("IsAssignableFrom(%p, %p) => %d", reinterpret_cast<jclass>(arg1), reinterpret_cast<jclass>(arg2), ret);
+  return ret;
+}
+
+DEFINE_WRAPPER(ToReflectedField)
+{
+  jobject ret = jni_env_->ToReflectedField(reinterpret_cast<jclass>(arg1), reinterpret_cast<jfieldID>(arg2), arg3);
+  ALOGV("ToReflectedField(%p, %p, %d) => %p", reinterpret_cast<jclass>(arg1), reinterpret_cast<jfieldID>(arg2), arg3, ret);
+  QemuMemory::memcpy(arg4, &ret, sizeof(jobject));
   return 0;
 }
 
@@ -211,6 +268,14 @@ DEFINE_WRAPPER(ExceptionClear)
   return 0;
 }
 
+DEFINE_WRAPPER(FatalError)
+{
+  QemuMemory::String msg(arg1);
+  ALOGV("FatalError(%s)", msg.c_str());
+  jni_env_->FatalError(msg.c_str());
+  return 0;
+}
+
 DEFINE_WRAPPER(PushLocalFrame)
 {
   ALOGV("PushLocalFrame(%d)", arg1);
@@ -247,10 +312,32 @@ DEFINE_WRAPPER(DeleteLocalRef)
   return 0;
 }
 
+DEFINE_WRAPPER(IsSameObject)
+{
+  jboolean ret = jni_env_->IsSameObject(reinterpret_cast<jobject>(arg1), reinterpret_cast<jobject>(arg2));
+  ALOGV("IsSameObject(%p, %p) => %d", reinterpret_cast<jobject>(arg1), reinterpret_cast<jobject>(arg2), ret);
+  return ret;
+}
+
 DEFINE_WRAPPER(NewLocalRef)
 {
   jobject obj = jni_env_->NewLocalRef(reinterpret_cast<jobject>(arg1));
   ALOGV("NewLocalRef(%p) => %p", reinterpret_cast<jobject>(arg1), obj);
+  QemuMemory::memcpy(arg2, &obj, sizeof(jobject));
+  return 0;
+}
+
+DEFINE_WRAPPER(EnsureLocalCapacity)
+{
+  jint ret = jni_env_->EnsureLocalCapacity(arg1);
+  ALOGV("EnsureLocalCapacity(%d) => %d", arg1, ret);
+  return ret;
+}
+
+DEFINE_WRAPPER(AllocObject)
+{
+  jobject obj = jni_env_->AllocObject(reinterpret_cast<jclass>(arg1));
+  ALOGV("AllocObject(%p) => %p", reinterpret_cast<jclass>(arg1), obj);
   QemuMemory::memcpy(arg2, &obj, sizeof(jobject));
   return 0;
 }
@@ -280,6 +367,21 @@ DEFINE_WRAPPER(NewObjectA)
   ALOGV("NewObjectA(%p, %p, ...) -- END => %p", cls, mID, obj);
   QemuMemory::memcpy(arg4, &obj, sizeof(jobject));
   return 0;
+}
+
+DEFINE_WRAPPER(GetObjectClass)
+{
+  jclass cls = jni_env_->GetObjectClass(reinterpret_cast<jobject>(arg1));
+  ALOGV("GetObjectClass(%p) => %p", reinterpret_cast<jobject>(arg1), cls);
+  QemuMemory::memcpy(arg2, &cls, sizeof(jclass));
+  return 0;
+}
+
+DEFINE_WRAPPER(IsInstanceOf)
+{
+  jboolean ret = jni_env_->IsInstanceOf(reinterpret_cast<jobject>(arg1), reinterpret_cast<jclass>(arg2));
+  ALOGV("IsInstanceOf(%p, %p) => %d", reinterpret_cast<jobject>(arg1), reinterpret_cast<jclass>(arg2), ret);
+  return ret;
 }
 
 DEFINE_WRAPPER(GetMethodID)
@@ -355,6 +457,75 @@ CALL_METHOD_WRAPPER(Long, jlong, %lld)
 CALL_METHOD_WRAPPER(Float, jfloat, %f)
 CALL_METHOD_WRAPPER(Double, jdouble, %g)
 CALL_VOID_METHOD_WRAPPER
+
+#define CALL_NONVIRTUAL_METHOD_WRAPPER(name, type, format) \
+DEFINE_WRAPPER(CallNonvirtual##name##MethodV) \
+{ \
+  jobject obj = reinterpret_cast<jobject>(arg1); \
+  jclass cls = reinterpret_cast<jclass>(arg2); \
+  jmethodID mID = reinterpret_cast<jmethodID>(arg3); \
+  jvalue *jargs = nullptr; \
+  ALOGV("CallNonvirtual" #name "MethodV(%p, %p, %p, ...) -- START", obj, cls, mID); \
+  unpack_va_args(mID, &jargs, arg4); \
+  type ret = jni_env_->CallNonvirtual##name##MethodA(obj, cls, mID, jargs); \
+  ALOGV("CallNonvirtual" #name "MethodV(%p, %p, %p, ...) -- END => " #format, obj, cls, mID, ret); \
+  QemuMemory::memcpy(arg5, &ret, sizeof(type)); \
+  free(jargs); \
+  return 0; \
+} \
+ \
+DEFINE_WRAPPER(CallNonvirtual##name##MethodA) \
+{ \
+  jobject obj = reinterpret_cast<jobject>(arg1); \
+  jclass cls = reinterpret_cast<jclass>(arg2); \
+  jmethodID mID = reinterpret_cast<jmethodID>(arg3); \
+  int nargs = strlen(runtime_->getMethodShorty(jni_env_, mID)) - 1; \
+  QemuMemory::Region<jvalue> args(arg4, nargs); \
+  ALOGV("CallNonvirtual" #name "MethodA(%p, %p, %p, ...) -- START", obj, cls, mID); \
+  type ret = jni_env_->CallNonvirtual##name##MethodA(obj, cls, mID, args.get()); \
+  ALOGV("CallNonvirtual" #name "MethodA(%p, %p, %p, ...) -- END => " #format, obj, cls, mID, ret); \
+  QemuMemory::memcpy(arg5, &ret, sizeof(type)); \
+  return 0; \
+}
+
+#define CALL_NONVIRTUAL_VOID_METHOD_WRAPPER \
+DEFINE_WRAPPER(CallNonvirtualVoidMethodV) \
+{ \
+  jobject obj = reinterpret_cast<jobject>(arg1); \
+  jclass cls = reinterpret_cast<jclass>(arg2); \
+  jmethodID mID = reinterpret_cast<jmethodID>(arg3); \
+  jvalue *jargs = nullptr; \
+  ALOGV("CallNonvirtualVoidMethodV(%p, %p, %p, ...) -- START", obj, cls, mID); \
+  unpack_va_args(mID, &jargs, arg4); \
+  jni_env_->CallNonvirtualVoidMethodA(obj, cls, mID, jargs); \
+  ALOGV("CallNonvirtualVoidMethodV(%p, %p, %p, ...) -- END", obj, cls, mID); \
+  free(jargs); \
+  return 0; \
+} \
+ \
+DEFINE_WRAPPER(CallNonvirtualVoidMethodA) \
+{ \
+  jobject obj = reinterpret_cast<jobject>(arg1); \
+  jclass cls = reinterpret_cast<jclass>(arg2); \
+  jmethodID mID = reinterpret_cast<jmethodID>(arg3); \
+  int nargs = strlen(runtime_->getMethodShorty(jni_env_, mID)) - 1; \
+  QemuMemory::Region<jvalue> args(arg4, nargs); \
+  ALOGV("CallNonvirtualVoidMethodA(%p, %p, %p, ...) -- START", obj, cls, mID); \
+  jni_env_->CallNonvirtualVoidMethodA(obj, cls, mID, args.get()); \
+  ALOGV("CallNonvirtualVoidMethodA(%p, %p, %p, ...) -- END", obj, cls, mID); \
+  return 0; \
+}
+
+CALL_NONVIRTUAL_METHOD_WRAPPER(Object, jobject, %p)
+CALL_NONVIRTUAL_METHOD_WRAPPER(Boolean, jboolean, %d)
+CALL_NONVIRTUAL_METHOD_WRAPPER(Byte, jbyte, %02x)
+CALL_NONVIRTUAL_METHOD_WRAPPER(Char, jchar, %04x)
+CALL_NONVIRTUAL_METHOD_WRAPPER(Short, jshort, %d)
+CALL_NONVIRTUAL_METHOD_WRAPPER(Int, jint, %d)
+CALL_NONVIRTUAL_METHOD_WRAPPER(Long, jlong, %lld)
+CALL_NONVIRTUAL_METHOD_WRAPPER(Float, jfloat, %f)
+CALL_NONVIRTUAL_METHOD_WRAPPER(Double, jdouble, %g)
+CALL_NONVIRTUAL_VOID_METHOD_WRAPPER
 
 DEFINE_WRAPPER(GetFieldID)
 {
@@ -507,6 +678,27 @@ GET_STATIC_FIELD_WRAPPER(Long, jlong, %lld)
 GET_STATIC_FIELD_WRAPPER(Float, jfloat, %f)
 GET_STATIC_FIELD_WRAPPER(Double, jdouble, %g)
 
+#define SET_STATIC_FIELD_WRAPPER(name, type, format) \
+DEFINE_WRAPPER(SetStatic##name##Field) \
+{ \
+  jclass cls = reinterpret_cast<jclass>(arg1); \
+  jfieldID fID = reinterpret_cast<jfieldID>(arg2); \
+  QemuMemory::Region<type> value(arg3); \
+  jni_env_->SetStatic##name##Field(cls, fID, *value.get()); \
+  ALOGV("SetStatic" #name "Field(%p, %p) <= " #format, cls, fID, *value.get()); \
+  return 0; \
+}
+
+SET_STATIC_FIELD_WRAPPER(Object, jobject, %p)
+SET_STATIC_FIELD_WRAPPER(Boolean, jboolean, %d)
+SET_STATIC_FIELD_WRAPPER(Byte, jbyte, %02x)
+SET_STATIC_FIELD_WRAPPER(Char, jchar, %04x)
+SET_STATIC_FIELD_WRAPPER(Short, jshort, %d)
+SET_STATIC_FIELD_WRAPPER(Int, jint, %d)
+SET_STATIC_FIELD_WRAPPER(Long, jlong, %lld)
+SET_STATIC_FIELD_WRAPPER(Float, jfloat, %f)
+SET_STATIC_FIELD_WRAPPER(Double, jdouble, %g)
+
 DEFINE_WRAPPER(NewString)
 {
   jsize len = arg2;
@@ -527,30 +719,19 @@ DEFINE_WRAPPER(GetStringLength)
 
 DEFINE_WRAPPER(GetStringChars)
 {
-  const jchar *s = jni_env_->GetStringChars(reinterpret_cast<jstring>(arg1), nullptr);
-  if (s) {
-      jsize len = jni_env_->GetStringLength(reinterpret_cast<jstring>(arg1));
-      uint32_t addr = QemuMemory::malloc((len + 1) * sizeof(jchar));
-      jboolean isCopy = JNI_TRUE;
-      QemuMemory::memcpy(addr, s, (len + 1) * sizeof(jchar));
-      QemuMemory::memcpy(arg2, &isCopy, sizeof(jboolean));
-      QemuMemory::memcpy(arg3, &addr, sizeof(addr));
-      std::string ss = unicode_to_string(s, len);
-      ALOGV("GetStringChars(%p) => [%p] %s", reinterpret_cast<jstring>(arg1), reinterpret_cast<char *>(addr), ss.c_str());
-      jni_env_->ReleaseStringChars(reinterpret_cast<jstring>(arg1), s);
-  }
-  else {
-      uint32_t addr = 0;
-      ALOGV("GetStringChars(%p) => null", reinterpret_cast<jstring>(arg1));
-      QemuMemory::memcpy(arg3, &addr, sizeof(addr));
-  }
+  jboolean isCopy;
+  const jchar *s = jni_env_->GetStringChars(reinterpret_cast<jstring>(arg1), &isCopy);
+  std::string ss = unicode_to_string(s, jni_env_->GetStringLength(reinterpret_cast<jstring>(arg1)));
+  ALOGV("GetStringChars(%p) => [%p, copy=%d] %s", reinterpret_cast<jstring>(arg1), s, isCopy, ss.c_str());
+  QemuMemory::memcpy(arg2, &isCopy, sizeof(jboolean));
+  QemuMemory::memcpy(arg3, &s, sizeof(const jchar *));
   return 0;
 }
 
 DEFINE_WRAPPER(ReleaseStringChars)
 {
-  QemuMemory::free(arg2);
-  ALOGV("ReleaseStringChars(%p, %p)", reinterpret_cast<jstring>(arg1), reinterpret_cast<char *>(arg2));
+  jni_env_->ReleaseStringChars(reinterpret_cast<jstring>(arg1), reinterpret_cast<const jchar *>(arg2));
+  ALOGV("ReleaseStringChars(%p, %p)", reinterpret_cast<jstring>(arg1), reinterpret_cast<const jchar *>(arg2));
   return 0;
 }
 
@@ -572,29 +753,18 @@ DEFINE_WRAPPER(GetStringUTFLength)
 
 DEFINE_WRAPPER(GetStringUTFChars)
 {
-  const char *s = jni_env_->GetStringUTFChars(reinterpret_cast<jstring>(arg1), nullptr);
-  if (s) {
-      size_t len = strlen(s);
-      uint32_t addr = QemuMemory::malloc(len + 1);
-      jboolean isCopy = JNI_TRUE;
-      QemuMemory::memcpy(addr, s, len + 1);
-      QemuMemory::memcpy(arg2, &isCopy, sizeof(jboolean));
-      QemuMemory::memcpy(arg3, &addr, sizeof(addr));
-      ALOGV("GetStringUTFChars(%p) => [%p] %s", reinterpret_cast<jstring>(arg1), reinterpret_cast<char *>(addr), s);
-      jni_env_->ReleaseStringUTFChars(reinterpret_cast<jstring>(arg1), s);
-  }
-  else {
-      uint32_t addr = 0;
-      ALOGV("GetStringUTFChars(%p) => null", reinterpret_cast<jstring>(arg1));
-      QemuMemory::memcpy(arg3, &addr, sizeof(addr));
-  }
+  jboolean isCopy;
+  const char *s = jni_env_->GetStringUTFChars(reinterpret_cast<jstring>(arg1), &isCopy);
+  ALOGV("GetStringUTFChars(%p) => [%p, copy=%d] %s", reinterpret_cast<jstring>(arg1), s, isCopy, s);
+  QemuMemory::memcpy(arg2, &isCopy, sizeof(jboolean));
+  QemuMemory::memcpy(arg3, &s, sizeof(const char *));
   return 0;
 }
 
 DEFINE_WRAPPER(ReleaseStringUTFChars)
 {
-  QemuMemory::free(arg2);
-  ALOGV("ReleaseStringUTFChars(%p, %p)", reinterpret_cast<jstring>(arg1), reinterpret_cast<char *>(arg2));
+  jni_env_->ReleaseStringUTFChars(reinterpret_cast<jstring>(arg1), reinterpret_cast<const char *>(arg2));
+  ALOGV("ReleaseStringUTFChars(%p, %p)", reinterpret_cast<jstring>(arg1), reinterpret_cast<const char *>(arg2));
   return 0;
 }
 
@@ -637,44 +807,30 @@ DEFINE_WRAPPER(New##name##Array) \
   return 0; \
 }
 
+NEW_ARRAY_WRAPPER(Boolean, jbooleanArray)
 NEW_ARRAY_WRAPPER(Byte, jbyteArray)
+NEW_ARRAY_WRAPPER(Char, jcharArray)
+NEW_ARRAY_WRAPPER(Short, jshortArray)
+NEW_ARRAY_WRAPPER(Int, jintArray)
+NEW_ARRAY_WRAPPER(Long, jlongArray)
+NEW_ARRAY_WRAPPER(Float, jfloatArray)
+NEW_ARRAY_WRAPPER(Double, jdoubleArray)
 
 #define ACCESS_ARRAY_ELEMENTS(name, type, atype) \
 DEFINE_WRAPPER(Get##name##ArrayElements) \
 { \
-  type *elems = jni_env_->Get##name##ArrayElements(reinterpret_cast<atype>(arg1), nullptr); \
-  if (elems) { \
-      jsize len = jni_env_->GetArrayLength(reinterpret_cast<jarray>(arg1)); \
-      uint32_t addr = QemuMemory::malloc(len * sizeof(type)); \
-      jboolean isCopy = JNI_TRUE; \
-      QemuMemory::memcpy(addr, elems, len * sizeof(type)); \
-      QemuMemory::memcpy(arg2, &isCopy, sizeof(jboolean)); \
-      QemuMemory::memcpy(arg3, &addr, sizeof(addr)); \
-      ALOGV("Get" #name "ArrayElements(%p) => %p [%d]", reinterpret_cast<atype>(arg1), reinterpret_cast<char *>(addr), len); \
-      jni_env_->Release##name##ArrayElements(reinterpret_cast<atype>(arg1), elems, JNI_ABORT); \
-  } \
-  else { \
-      uint32_t addr = 0; \
-      ALOGV("Get" #name "ArrayElements(%p) => null", reinterpret_cast<atype>(arg1)); \
-      QemuMemory::memcpy(arg3, &addr, sizeof(addr)); \
-  } \
+  jboolean isCopy; \
+  type *elems = jni_env_->Get##name##ArrayElements(reinterpret_cast<atype>(arg1), &isCopy); \
+  ALOGV("Get" #name "ArrayElements(%p) => %p [copy=%d]", reinterpret_cast<atype>(arg1), elems, isCopy); \
+  QemuMemory::memcpy(arg2, &isCopy, sizeof(jboolean)); \
+  QemuMemory::memcpy(arg3, &elems, sizeof(type*)); \
   return 0; \
 } \
  \
 DEFINE_WRAPPER(Release##name##ArrayElements) \
 { \
-  if (arg3 == 0 || arg3 == JNI_COMMIT) { \
-      jsize len = jni_env_->GetArrayLength(reinterpret_cast<jarray>(arg1)); \
-      type *elems = jni_env_->Get##name##ArrayElements(reinterpret_cast<atype>(arg1), nullptr); \
-      QemuMemory::Region<type> g_elems(arg2, len); \
-      memcpy(elems, g_elems.get(), len * sizeof(type)); \
-      jni_env_->Release##name##ArrayElements(reinterpret_cast<atype>(arg1), elems, 0); \
-  } \
- \
-  if (arg3 != JNI_COMMIT) \
-    QemuMemory::free(arg2); \
- \
-  ALOGV("Release" #name "ArrayElements(%p, %p, %d)", reinterpret_cast<atype>(arg1), reinterpret_cast<char *>(arg2), arg3); \
+  jni_env_->Release##name##ArrayElements(reinterpret_cast<atype>(arg1), reinterpret_cast<type *>(arg2), arg3); \
+  ALOGV("Release" #name "ArrayElements(%p, %p, %d)", reinterpret_cast<atype>(arg1), reinterpret_cast<type *>(arg2), arg3); \
   return 0; \
 }
 
@@ -764,10 +920,76 @@ DEFINE_WRAPPER(UnregisterNatives)
   return jni_env_->UnregisterNatives(reinterpret_cast<jclass>(arg1));
 }
 
+DEFINE_WRAPPER(MonitorEnter)
+{
+  jint ret = jni_env_->MonitorEnter(reinterpret_cast<jobject>(arg1));
+  ALOGV("MonitorEnter(%p) => %d", reinterpret_cast<jobject>(arg1), ret);
+  return ret;
+}
+
+DEFINE_WRAPPER(MonitorExit)
+{
+  jint ret = jni_env_->MonitorExit(reinterpret_cast<jobject>(arg1));
+  ALOGV("MonitorExit(%p) => %d", reinterpret_cast<jobject>(arg1), ret);
+  return ret;
+}
+
 DEFINE_WRAPPER(GetJavaVM)
 {
   JavaVM *vm;
   return jni_env_->GetJavaVM(&vm);
+}
+
+DEFINE_WRAPPER(GetStringRegion)
+{
+  QemuMemory::Region<jchar> buf(arg4, arg3);
+  jni_env_->GetStringRegion(reinterpret_cast<jstring>(arg1), arg2, arg3, buf.get());
+  ALOGV("GetStringRegion(%p, %d, %d, %p)", reinterpret_cast<jstring>(arg1), arg2, arg3, reinterpret_cast<void *>(arg4));
+  return 0;
+}
+
+DEFINE_WRAPPER(GetStringUTFRegion)
+{
+  QemuMemory::Region<char> buf(arg4, arg3);
+  jni_env_->GetStringUTFRegion(reinterpret_cast<jstring>(arg1), arg2, arg3, buf.get());
+  ALOGV("GetStringUTFRegion(%p, %d, %d, %p)", reinterpret_cast<jstring>(arg1), arg2, arg3, reinterpret_cast<void *>(arg4));
+  return 0;
+}
+
+DEFINE_WRAPPER(GetPrimitiveArrayCritical)
+{
+  jboolean isCopy;
+  void *ptr = jni_env_->GetPrimitiveArrayCritical(reinterpret_cast<jarray>(arg1), &isCopy);
+  ALOGV("GetPrimitiveArrayCritical(%p) => %p [copy=%d]", reinterpret_cast<jarray>(arg1), ptr, isCopy);
+  QemuMemory::memcpy(arg2, &isCopy, sizeof(jboolean));
+  QemuMemory::memcpy(arg3, &ptr, sizeof(void *));
+  return 0;
+}
+
+DEFINE_WRAPPER(ReleasePrimitiveArrayCritical)
+{
+  jni_env_->ReleasePrimitiveArrayCritical(reinterpret_cast<jarray>(arg1), reinterpret_cast<void *>(arg2), arg3);
+  ALOGV("ReleasePrimitiveArrayCritical(%p, %p, %d)", reinterpret_cast<jarray>(arg1), reinterpret_cast<void *>(arg2), arg3);
+  return 0;
+}
+
+DEFINE_WRAPPER(GetStringCritical)
+{
+  jboolean isCopy;
+  jsize len = jni_env_->GetStringLength(reinterpret_cast<jstring>(arg1));
+  const jchar *s = jni_env_->GetStringCritical(reinterpret_cast<jstring>(arg1), &isCopy);
+  std::string ss = unicode_to_string(s, len);
+  ALOGV("GetStringCritical(%p) => [%p, copy=%d] %s", reinterpret_cast<jstring>(arg1), s, isCopy, ss.c_str());
+  QemuMemory::memcpy(arg2, &isCopy, sizeof(jboolean));
+  QemuMemory::memcpy(arg3, &s, sizeof(const jchar *));
+  return 0;
+}
+
+DEFINE_WRAPPER(ReleaseStringCritical)
+{
+  jni_env_->ReleaseStringCritical(reinterpret_cast<jstring>(arg1), reinterpret_cast<const jchar *>(arg2));
+  ALOGV("ReleaseStringCritical(%p, %p)", reinterpret_cast<jstring>(arg1), reinterpret_cast<const jchar *>(arg2));
+  return 0;
 }
 
 DEFINE_WRAPPER(NewWeakGlobalRef)
@@ -810,22 +1032,50 @@ DEFINE_WRAPPER(GetDirectBufferAddress)
   return 0;
 }
 
+DEFINE_WRAPPER(GetDirectBufferCapacity)
+{
+  jlong ret = jni_env_->GetDirectBufferCapacity(reinterpret_cast<jobject>(arg1));
+  ALOGV("GetDirectBufferCapacity(%p) => %lld", reinterpret_cast<jobject>(arg1), ret);
+  QemuMemory::memcpy(arg2, &ret, sizeof(jlong));
+  return 0;
+}
+
+DEFINE_WRAPPER(GetObjectRefType)
+{
+  jobjectRefType ret = jni_env_->GetObjectRefType(reinterpret_cast<jobject>(arg1));
+  ALOGV("GetObjectRefType(%p) => %d", reinterpret_cast<jobject>(arg1), ret);
+  return ret;
+}
+
 static wrapper_fcn_t jni_env_wrapper_[] = {
     [4] = WRAPPER(GetVersion),
+    [5] = WRAPPER(DefineClass),
     [6] = WRAPPER(FindClass),
+    [7] = WRAPPER(FromReflectedMethod),
+    [8] = WRAPPER(FromReflectedField),
+    [9] = WRAPPER(ToReflectedMethod),
+    [10] = WRAPPER(GetSuperclass),
+    [11] = WRAPPER(IsAssignableFrom),
+    [12] = WRAPPER(ToReflectedField),
     [13] = WRAPPER(Throw),
     [14] = WRAPPER(ThrowNew),
     [15] = WRAPPER(ExceptionOccurred),
     [16] = WRAPPER(ExceptionDescribe),
     [17] = WRAPPER(ExceptionClear),
+    [18] = WRAPPER(FatalError),
     [19] = WRAPPER(PushLocalFrame),
     [20] = WRAPPER(PopLocalFrame),
     [21] = WRAPPER(NewGlobalRef),
     [22] = WRAPPER(DeleteGlobalRef),
     [23] = WRAPPER(DeleteLocalRef),
+    [24] = WRAPPER(IsSameObject),
     [25] = WRAPPER(NewLocalRef),
+    [26] = WRAPPER(EnsureLocalCapacity),
+    [27] = WRAPPER(AllocObject),
     [29] = WRAPPER(NewObjectV),
     [30] = WRAPPER(NewObjectA),
+    [31] = WRAPPER(GetObjectClass),
+    [32] = WRAPPER(IsInstanceOf),
     [33] = WRAPPER(GetMethodID),
     [35] = WRAPPER(CallObjectMethodV),
     [36] = WRAPPER(CallObjectMethodA),
@@ -847,6 +1097,26 @@ static wrapper_fcn_t jni_env_wrapper_[] = {
     [60] = WRAPPER(CallDoubleMethodA),
     [62] = WRAPPER(CallVoidMethodV),
     [63] = WRAPPER(CallVoidMethodA),
+    [65] = WRAPPER(CallNonvirtualObjectMethodV),
+    [66] = WRAPPER(CallNonvirtualObjectMethodA),
+    [68] = WRAPPER(CallNonvirtualBooleanMethodV),
+    [69] = WRAPPER(CallNonvirtualBooleanMethodA),
+    [71] = WRAPPER(CallNonvirtualByteMethodV),
+    [72] = WRAPPER(CallNonvirtualByteMethodA),
+    [74] = WRAPPER(CallNonvirtualCharMethodV),
+    [75] = WRAPPER(CallNonvirtualCharMethodA),
+    [77] = WRAPPER(CallNonvirtualShortMethodV),
+    [78] = WRAPPER(CallNonvirtualShortMethodA),
+    [80] = WRAPPER(CallNonvirtualIntMethodV),
+    [81] = WRAPPER(CallNonvirtualIntMethodA),
+    [83] = WRAPPER(CallNonvirtualLongMethodV),
+    [84] = WRAPPER(CallNonvirtualLongMethodA),
+    [86] = WRAPPER(CallNonvirtualFloatMethodV),
+    [87] = WRAPPER(CallNonvirtualFloatMethodA),
+    [89] = WRAPPER(CallNonvirtualDoubleMethodV),
+    [90] = WRAPPER(CallNonvirtualDoubleMethodA),
+    [92] = WRAPPER(CallNonvirtualVoidMethodV),
+    [93] = WRAPPER(CallNonvirtualVoidMethodA),
     [94] = WRAPPER(GetFieldID),
     [95] = WRAPPER(GetObjectField),
     [96] = WRAPPER(GetBooleanField),
@@ -897,6 +1167,15 @@ static wrapper_fcn_t jni_env_wrapper_[] = {
     [151] = WRAPPER(GetStaticLongField),
     [152] = WRAPPER(GetStaticFloatField),
     [153] = WRAPPER(GetStaticDoubleField),
+    [154] = WRAPPER(SetStaticObjectField),
+    [155] = WRAPPER(SetStaticBooleanField),
+    [156] = WRAPPER(SetStaticByteField),
+    [157] = WRAPPER(SetStaticCharField),
+    [158] = WRAPPER(SetStaticShortField),
+    [159] = WRAPPER(SetStaticIntField),
+    [160] = WRAPPER(SetStaticLongField),
+    [161] = WRAPPER(SetStaticFloatField),
+    [162] = WRAPPER(SetStaticDoubleField),
     [163] = WRAPPER(NewString),
     [164] = WRAPPER(GetStringLength),
     [165] = WRAPPER(GetStringChars),
@@ -909,7 +1188,14 @@ static wrapper_fcn_t jni_env_wrapper_[] = {
     [172] = WRAPPER(NewObjectArray),
     [173] = WRAPPER(GetObjectArrayElement),
     [174] = WRAPPER(SetObjectArrayElement),
+    [175] = WRAPPER(NewBooleanArray),
     [176] = WRAPPER(NewByteArray),
+    [177] = WRAPPER(NewCharArray),
+    [178] = WRAPPER(NewShortArray),
+    [179] = WRAPPER(NewIntArray),
+    [180] = WRAPPER(NewLongArray),
+    [181] = WRAPPER(NewFloatArray),
+    [182] = WRAPPER(NewDoubleArray),
     [183] = WRAPPER(GetBooleanArrayElements),
     [184] = WRAPPER(GetByteArrayElements),
     [185] = WRAPPER(GetCharArrayElements),
@@ -944,12 +1230,22 @@ static wrapper_fcn_t jni_env_wrapper_[] = {
     [214] = WRAPPER(SetDoubleArrayRegion),
     [215] = WRAPPER(RegisterNatives),
     [216] = WRAPPER(UnregisterNatives),
+    [217] = WRAPPER(MonitorEnter),
+    [218] = WRAPPER(MonitorExit),
     [219] = WRAPPER(GetJavaVM),
+    [220] = WRAPPER(GetStringRegion),
+    [221] = WRAPPER(GetStringUTFRegion),
+    [222] = WRAPPER(GetPrimitiveArrayCritical),
+    [223] = WRAPPER(ReleasePrimitiveArrayCritical),
+    [224] = WRAPPER(GetStringCritical),
+    [225] = WRAPPER(ReleaseStringCritical),
     [226] = WRAPPER(NewWeakGlobalRef),
     [227] = WRAPPER(DeleteWeakGlobalRef),
     [228] = WRAPPER(ExceptionCheck),
     [229] = WRAPPER(NewDirectByteBuffer),
     [230] = WRAPPER(GetDirectBufferAddress),
+    [231] = WRAPPER(GetDirectBufferCapacity),
+    [232] = WRAPPER(GetObjectRefType)
 };
 
 static int32_t syscall_jni_env(void *cpu_env, int num,
@@ -1023,17 +1319,26 @@ namespace JavaBridge {
 
 void initialize(const NativeBridgeRuntimeCallbacks *runtime)
 {
+  jsize count;
+
+  JNI_GetCreatedJavaVMs(&java_vm_, 1, &count);
+  ALOGV("JavaBridge::java_vm_: %p", java_vm_);
+
   guest_jni_env_ = QemuCore::lookup_symbol("nb_qemu_JNIEnv");
   ALOGV("JavaBridge::guest_jni_env_: %p", reinterpret_cast<void *>(guest_jni_env_));
   guest_java_vm_ = QemuCore::lookup_symbol("nb_qemu_JavaVM");
   ALOGV("JavaBridge::guest_java_vm_: %p", reinterpret_cast<void *>(guest_java_vm_));
+
   QemuCore::register_syscall_handler(syscall_handler);
+
   runtime_ = runtime;
 }
 
 uint32_t wrap_jni_env(JNIEnv *env)
 {
   jni_env_ = env;
+  if (jni_env_ && ! java_vm_)
+    jni_env_->GetJavaVM(&java_vm_);
   return guest_jni_env_;
 }
 

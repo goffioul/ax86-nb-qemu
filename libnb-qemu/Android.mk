@@ -29,7 +29,7 @@ LOCAL_SRC_FILES := \
 	QemuCpu.cpp \
 	Trampoline.cpp \
 	libnb-qemu.cpp
-LOCAL_SHARED_LIBRARIES := liblog libz libbase
+LOCAL_SHARED_LIBRARIES := libnativehelper liblog libz libbase
 LOCAL_STATIC_LIBRARIES := libqemu-core libqemu-target libqemu-glib libqemu-capstone libffi
 LOCAL_CFLAGS := \
 	-Wno-unused-parameter -Wno-unused-variable -Wno-writable-strings \
