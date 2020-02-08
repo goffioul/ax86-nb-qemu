@@ -1,0 +1,2 @@
+uint32_t slCreateEngine (ptr:void pEngine, int numOptions, ptr:void pEngineOptions, int numInterfaces, ptr:void pInterfaceIds, ptr:void pInterfaceRequired)
+uint32_t SLObjectItf_Realize (ptr:void self, uint32_t)

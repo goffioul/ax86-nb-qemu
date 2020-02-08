@@ -10,12 +10,16 @@ parser.add_argument('-b', metavar='base', type=lambda x: int(x, 0), required=Tru
 parser.add_argument('-g', action='store_true')
 parser.add_argument('-d', action='store_true')
 parser.add_argument('-i', metavar='include', action='append')
+parser.add_argument('-a', metavar='include_after', action='append')
+parser.add_argument('-p', metavar='prefix')
 parsed_args = parser.parse_args()
 
 base = parsed_args.b
 guest = parsed_args.g
 debug = parsed_args.d
 includes = parsed_args.i
+includes_after = parsed_args.a
+prefix = parsed_args.p or ''
 functions = []
 
 with open(parsed_args.file[0]) as f:
@@ -40,7 +44,7 @@ def isPointerType(type):
 def getArgumentTypeAndSize(type, lineno=0):
     if type in ['int', 'GLint', 'GLenum', 'GLfloat', 'GLintptr', 'GLfixed', 'GLclampx', 'GLclampf', 'EGLint', 'EGLenum', 'EGLNativeFileDescriptorKHR']:
         return type, 4
-    elif type in ['GLuint', 'GLbitfield', 'GLsizei', 'GLsizeiptr']:
+    elif type in ['GLuint', 'GLbitfield', 'GLsizei', 'GLsizeiptr', 'uint32_t']:
         return type, 4
     elif type in ['GLshort']:
         return type, 2
@@ -62,8 +66,9 @@ def genHostLib():
 #include <log/log.h>
 #include "QemuInclude.h"''' % ("#define LOG_NDEBUG 0\n" if debug else ''))
 
-    for inc in includes:
-        print('#include <%s>' % inc)
+    if includes:
+        for inc in includes:
+            print('#include <%s>' % inc)
 
     print('')
 
@@ -115,20 +120,29 @@ def genHostLib():
     print('    }')
     print('}')
 
+    if includes_after:
+        print('')
+        for inc in includes_after:
+            print('#include <%s>' % inc)
+
 def genGuestLib():
     if includes:
         for inc in includes:
             print('#include <%s>' % inc)
         print('')
     for i, func in enumerate(functions):
-        print('''__attribute__((naked,noinline)) void %s() {
+        print('''__attribute__((naked,noinline)) void %s%s() {
     __asm__ volatile(
         "push {r0, r1, r2, r3}\\n"
         "svc #0x%04x\\n"
         "add sp, sp, #16\\n" 
         "bx lr"
     );
-}''' % (func['name'], (base + i)))
+}''' % (prefix, func['name'], (base + i)))
+    if includes_after:
+        print('')
+        for inc in includes_after:
+            print('#include <%s>' % inc)
 
 if guest:
     genGuestLib()
