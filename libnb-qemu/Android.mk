@@ -38,7 +38,7 @@ LOCAL_SHARED_LIBRARIES := libnativehelper liblog libz libbase libdl
 LOCAL_STATIC_LIBRARIES := libqemu-core libqemu-target libqemu-glib libqemu-capstone libffi
 LOCAL_CFLAGS := $(LOCAL_QEMU_CFLAGS)
 LOCAL_C_INCLUDES := system/core/libnativebridge/include
-LOCAL_EXPORT_STATIC_LIBRARY_HEADERS := libqemu-core libqemu-target libqemu-glib
+LOCAL_EXPORT_STATIC_LIBRARY_HEADERS := libqemu-core libqemu-target libqemu-glib libffi
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -70,8 +70,16 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libnb-qemu-OpenSLES
-LOCAL_SRC_FILES := libOpenSLES.c
+LOCAL_SRC_FILES := libOpenSLES.c libOpenSLES.itf.cpp
 LOCAL_CFLAGS := \
 	-fvisibility=hidden $(LOCAL_QEMU_CFLAGS)
 LOCAL_SHARED_LIBRARIES := libnb-qemu liblog libOpenSLES
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libnb-qemu-android
+LOCAL_SRC_FILES := libandroid.c libandroid.itf.cpp
+LOCAL_CFLAGS := \
+	-fvisibility=hidden $(LOCAL_QEMU_CFLAGS)
+LOCAL_SHARED_LIBRARIES := libnb-qemu liblog libandroid
 include $(BUILD_SHARED_LIBRARY)

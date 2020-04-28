@@ -1,3 +1,6 @@
+%base 0x1000
+%host:include <GLES3/gl32.h>
+%host:include <GLES2/gl2ext.h>
 void glActiveTexture (GLenum texture)
 void glAttachShader (GLuint program, GLuint shader)
 void glBindAttribLocation (GLuint program, GLuint index, ptr:GLchar name)

@@ -1,3 +1,8 @@
+%base 0x0100
+%host:include <EGL/egl.h>
+%host:include <EGL/eglext.h>
+%host:include <libEGL.def.h>
+%guest:include <libEGL.common.c>
 EGLBoolean eglChooseConfig (EGLDisplay dpy, ptr:EGLint attrib_list, ptr:EGLConfig configs, EGLint config_size, ptr:EGLint num_config)
 EGLBoolean eglCopyBuffers (EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target)
 EGLContext eglCreateContext (EGLDisplay dpy, EGLConfig config, EGLContext share_context, ptr:EGLint attrib_list)

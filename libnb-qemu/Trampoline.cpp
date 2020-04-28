@@ -47,6 +47,27 @@ static ffi_type *jni_to_ffi(char t)
   }
 }
 
+static ffi_type *type_to_ffi(char t)
+{
+  switch (t) {
+    case 'c': return &ffi_type_sint8;
+    case 'C': return &ffi_type_uint8;
+    case 's': return &ffi_type_sint16;
+    case 'S': return &ffi_type_uint16;
+    case 'i': return &ffi_type_sint32;
+    case 'I': return &ffi_type_uint32;
+    case 'l': return &ffi_type_sint64;
+    case 'L': return &ffi_type_uint64;
+    case 'f': return &ffi_type_float;
+    case 'd': return &ffi_type_double;
+    case 'p': return &ffi_type_pointer;
+    case 'v': return &ffi_type_void;
+    default:
+        ALOGE("Unsupport type: %c", t);
+        return nullptr;
+  }
+}
+
 Trampoline::Trampoline(const std::string& name, uint32_t address, const std::string& shorty, bool jni)
      : name_(name),
        address_(address),
@@ -143,6 +164,54 @@ Trampoline::Trampoline(const std::string& name, uint32_t address, const std::str
           argtypes_[1] = &ffi_type_pointer;
           argtypes_[2] = &ffi_type_ulong;
           nargs_ = 3;
+      }
+      else if (! shorty.empty()) {
+          nargs_ = shorty.length() - 1;
+          rtype_ = type_to_ffi(shorty[0]);
+          if (! rtype_)
+            return;
+          argtypes_ = reinterpret_cast<ffi_type **>(calloc(sizeof(ffi_type *), nargs_));
+          for (int i = 0, nregs = 4; i < nargs_; i++) {
+              argtypes_[i] = type_to_ffi(shorty[i+1]);
+              if (! argtypes_[i])
+                return;
+              // Check valid size and attempt to use register(s)
+              switch (argtypes_[i]->size) {
+                  case 1:
+                  case 2:
+                  case 4:
+                    if (nregs) {
+                        nregs--;
+                        continue;
+                    }
+                    break;
+                  case 8:
+                    if (nregs >= 2) {
+                        nregs = nregs == 3 ? 2 : nregs;
+                        nregs -= 2;
+                        continue;
+                    }
+                    nregs = 0;
+                    break;
+                  default:
+                    ALOGE("Unsupported argument size: %d", argtypes_[i]->size);
+                    return;
+              }
+              // Argument must be passed in the stack
+              if (! stackoffsets_)
+                stackoffsets_ = reinterpret_cast<int *>(calloc(sizeof(int), nargs_ - i));
+              // Double-word sized arguments must be double-word aligned in the stack
+              if (argtypes_[i]->size == 8)
+                stacksize_ = ALIGN_DWORD(stacksize_);
+              // Add argument to the stack
+              stackoffsets_[nstackargs_] = stacksize_;
+              nstackargs_++;
+              stacksize_ += argtypes_[i]->size == 8 ? 8 : 4;
+          }
+          // The whole stack of arguments must be double-word aligned
+          if (stacksize_) {
+              stacksize_ = ALIGN_DWORD(stacksize_);
+          }
       }
       else {
           ALOGE("Cannot create trampoline for unknown function: %s", name.c_str());

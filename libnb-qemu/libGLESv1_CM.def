@@ -1,3 +1,7 @@
+%base 0x0400
+%host:include <GLES/gl.h>
+%host:include <GLES/glext.h>
+%host:include <libGLESv1_CM.def.h>
 void glAlphaFunc (GLenum func, GLfloat ref)
 void glClearColor (GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
 void glClearDepthf (GLfloat d)

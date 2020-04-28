@@ -6,11 +6,11 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file', nargs=1)
-parser.add_argument('-b', metavar='base', type=lambda x: int(x, 0), required=True)
+parser.add_argument('-b', metavar='base', type=lambda x: int(x, 0), default=0x0100)
 parser.add_argument('-g', action='store_true')
 parser.add_argument('-d', action='store_true')
-parser.add_argument('-i', metavar='include', action='append')
-parser.add_argument('-a', metavar='include_after', action='append')
+parser.add_argument('-i', metavar='include', action='append', default=[])
+parser.add_argument('-a', metavar='include_after', action='append', default=[])
 parser.add_argument('-p', metavar='prefix')
 parsed_args = parser.parse_args()
 
@@ -25,15 +25,42 @@ functions = []
 with open(parsed_args.file[0]) as f:
     for idx, line in enumerate(f):
         line = line.strip()
-        ret, name, sig = line.split(maxsplit=2)
-        sig = sig[1:-1].strip()
-        args = [x.split(maxsplit=1) for x in re.split(r', *', sig)] if sig != 'void' else []
-        functions.append({
-            'name': name,
-            'return': ret,
-            'arguments': args,
-            'lineno': idx + 1
-        })
+        if line.startswith('%'):
+            cmdmode = None
+            cmd, cmdarg = line[1:].split(maxsplit=1)
+            if ':' in cmd:
+                cmdmode, cmd = cmd.split(':', maxsplit=1)
+                if cmdmode not in ['host', 'guest']:
+                    raise ValueError('unknown command mode: %s' % cmdmode)
+            if cmdmode is None or (cmdmode == 'host' and not guest) or (cmdmode == 'guest' and guest):
+                if cmd == 'base':
+                    base = int(cmdarg, 0)
+                elif cmd == 'include':
+                    includes.append(cmdarg)
+                elif cmd == 'include_after':
+                    includes_after.append(cmdarg)
+                elif cmd == 'prefix':
+                    prefix = cmdarg
+                else:
+                    raise ValueError('unknown command: %s' % cmd)
+        elif line:
+            if line.startswith('host:'):
+                if guest:
+                    continue
+                line = line[5:].strip()
+            elif line.startswith('guest:'):
+                if not guest:
+                    continue
+                line = line[6:].strip()
+            ret, name, sig = line.split(maxsplit=2)
+            sig = sig[1:-1].strip()
+            args = [x.split(maxsplit=1) for x in re.split(r', *', sig)] if sig != 'void' else []
+            functions.append({
+                'name': name,
+                'return': ret,
+                'arguments': args,
+                'lineno': idx + 1
+            })
 
 def isPointerType(type):
     return type.startswith('ptr:') or \
@@ -42,17 +69,21 @@ def isPointerType(type):
                      'EGLSyncKHR', 'EGLImageKHR', 'EGLStreamKHR', 'GLeglImageOES']
 
 def getArgumentTypeAndSize(type, lineno=0):
-    if type in ['int', 'GLint', 'GLenum', 'GLfloat', 'GLintptr', 'GLfixed', 'GLclampx', 'GLclampf', 'EGLint', 'EGLenum', 'EGLNativeFileDescriptorKHR']:
+    if type in ['int', 'int32_t', 'ssize_t', 'off_t', 'float',
+                'GLint', 'GLenum', 'GLfloat', 'GLintptr', 'GLfixed', 'GLclampx', 'GLclampf',
+                'EGLint', 'EGLenum', 'EGLNativeFileDescriptorKHR']:
         return type, 4
-    elif type in ['GLuint', 'GLbitfield', 'GLsizei', 'GLsizeiptr', 'uint32_t']:
+    elif type in ['uint32_t', 'size_t',
+                  'GLuint', 'GLbitfield', 'GLsizei', 'GLsizeiptr']:
         return type, 4
-    elif type in ['GLshort']:
+    elif type in ['int16_t', 'GLshort']:
         return type, 2
-    elif type in ['GLboolean', 'GLubyte', 'EGLBoolean']:
+    elif type in ['int8_t', 'uint8_t', 'GLboolean', 'GLubyte', 'EGLBoolean']:
         return type, 1
     elif isPointerType(type):
         return 'void*', 4
-    elif type in ['GLint64', 'GLuint64', 'EGLTime', 'EGLTimeKHR', 'EGLnsecsANDROID', 'EGLuint64KHR', 'EGLuint64NV']:
+    elif type in ['int64_t', 'uint64_t', 'double', 'off64_t',
+                  'GLint64', 'GLuint64', 'EGLTime', 'EGLTimeKHR', 'EGLnsecsANDROID', 'EGLuint64KHR', 'EGLuint64NV']:
         return type, 8
     elif type == 'void':
         return 'void', 0
@@ -68,8 +99,10 @@ def genHostLib():
 
     if includes:
         for inc in includes:
-            print('#include <%s>' % inc)
+            print('#include %s' % inc)
 
+    print('')
+    print('extern void* unwrap_jni_env(void* env);')
     print('')
 
     for i, func in enumerate(functions):
@@ -88,7 +121,10 @@ def genHostLib():
             arg_type, arg_size = getArgumentTypeAndSize(arg[0], lineno=func['lineno'])
             if arg_size == 8:
                 offset = (offset+7)&(~7)
-            print('        *(%s*)(&sp[%d])%s' % (arg_type, offset, ',' if j < (nargs-1) else ''))
+            if arg[0] == 'ptr:JNIEnv':
+                print('        unwrap_jni_env(*(%s*)(&sp[%d]))%s' % (arg_type, offset, ',' if j < (nargs-1) else ''))
+            else:
+                print('        *(%s*)(&sp[%d])%s' % (arg_type, offset, ',' if j < (nargs-1) else ''))
             offset += ((arg_size+3)&(~3))
         print('    );')
         if ret_size:
@@ -123,12 +159,12 @@ def genHostLib():
     if includes_after:
         print('')
         for inc in includes_after:
-            print('#include <%s>' % inc)
+            print('#include %s' % inc)
 
 def genGuestLib():
     if includes:
         for inc in includes:
-            print('#include <%s>' % inc)
+            print('#include %s' % inc)
         print('')
     for i, func in enumerate(functions):
         print('''__attribute__((naked,noinline)) void %s%s() {
@@ -142,7 +178,7 @@ def genGuestLib():
     if includes_after:
         print('')
         for inc in includes_after:
-            print('#include <%s>' % inc)
+            print('#include %s' % inc)
 
 if guest:
     genGuestLib()

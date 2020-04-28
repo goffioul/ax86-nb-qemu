@@ -1,0 +1,67 @@
+%base 0x0700
+%host:include <android/asset_manager_jni.h>
+%host:include <android/asset_manager.h>
+%host:include <android/native_window_jni.h>
+%host:include <android/sensor.h>
+%host:include "libandroid.itf.h"
+
+void AAssetDir_close (ptr:void assetDir)
+ptr:void AAssetDir_getNextFileName (ptr:void assetDir)
+void AAssetDir_rewind (ptr:void assetDir)
+
+ptr:void AAssetManager_fromJava (ptr:JNIEnv env, ptr:void asset)
+ptr:void AAssetManager_open (ptr:void mgr, ptr:void filename, int mode)
+ptr:void AAssetManager_openDir (ptr:void mgr, ptr:void dirname)
+
+void AAsset_close (ptr:void asset)
+ptr:void AAsset_getBuffer (ptr:void asset)
+off_t AAsset_getLength (ptr:void* asset)
+off64_t AAsset_getLength64 (ptr:void asset)
+off_t AAsset_getRemainingLength (ptr:void asset)
+off64_t AAsset_getRemainingLength64 (ptr:void asset)
+int AAsset_isAllocated (ptr:void asset)
+int AAsset_openFileDescriptor (ptr:void asset, ptr:off_t outStart, ptr:off_t outLength)
+int AAsset_openFileDescriptor64 (ptr:void asset, ptr:off64_t outStart, ptr:off64_t outLength)
+int AAsset_read (ptr:void asset, ptr:void buf, size_t count)
+off_t AAsset_seek (ptr:void asset, off_t offset, int whence)
+off64_t AAsset_seek64 (ptr:void asset, off64_t offset, int whence)
+
+void ANativeWindow_acquire (ptr:void window)
+int32_t ANativeWindow_getFormat (ptr:void window)
+int32_t ANativeWindow_getHeight (ptr:void window)
+int32_t ANativeWindow_getWidth (ptr:void window)
+int32_t ANativeWindow_lock (ptr:void window, ptr:void outBuffer, ptr:void inOutDirtyBounds)
+void ANativeWindow_release (ptr:void window)
+int32_t ANativeWindow_setBuffersGeometry (ptr:void window, int32_t width, int32_t height, int32_t format)
+int32_t ANativeWindow_unlockAndPost (ptr:void window)
+ptr:void ANativeWindow_fromSurface (ptr:JNIEnv env, ptr:void surface)
+
+void ALooper_acquire (ptr:void looper)
+host: int libandroid_ALooper_addFd (ptr:void looper, int fd, int ident, int events, ptr:void callback, ptr:void data)
+guest: int ALooper_addFd (ptr:void looper, int fd, int ident, int events, ptr:void callback, ptr:void data)
+ptr:void ALooper_forThread (void)
+int ALooper_pollAll (int timeoutMillis, ptr:int outFd, ptr:int outEvents, ptr:void outData)
+int ALooper_pollOnce (int timeoutMillis, ptr:int outFd, ptr:int outEvents, ptr:void outData)
+ptr:void ALooper_prepare (int opts)
+void ALooper_release (ptr:void looper)
+int ALooper_removeFd (ptr:void looper, int fd)
+void ALooper_wake (ptr:void looper)
+
+int ASensorEventQueue_disableSensor (ptr:void queue, ptr:void sensor)
+int ASensorEventQueue_enableSensor (ptr:void queue, ptr:void sensor)
+ssize_t ASensorEventQueue_getEvents (ptr:void queue, ptr:void events, size_t count)
+int ASensorEventQueue_hasEvents (ptr:void queue)
+int ASensorEventQueue_setEventRate (ptr:void queue, ptr:void sensor, int32_t usec)
+
+host: ptr:void libandroid_ASensorManager_createEventQueue (ptr:void manager, ptr:void looper, int ident, ptr:void callback, ptr:void data)
+guest: ptr:void ASensorManager_createEventQueue (ptr:void manager, ptr:void looper, int ident, ptr:void callback, ptr:void data)
+int ASensorManager_destroyEventQueue (ptr:void manager, ptr:void queue)
+ptr:void ASensorManager_getDefaultSensor (ptr:void manager, int type)
+ptr:void ASensorManager_getInstance (void)
+int ASensorManager_getSensorList (ptr:void manager, ptr:void list)
+
+int ASensor_getMinDelay (ptr:void sensor)
+ptr:void ASensor_getName (ptr:void sensor)
+float ASensor_getResolution (ptr:void sensor)
+int ASensor_getType (ptr:void sensor)
+ptr:void ASensor_getVendor (ptr:void sensor)

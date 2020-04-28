@@ -1,2 +1,67 @@
-uint32_t slCreateEngine (ptr:void pEngine, int numOptions, ptr:void pEngineOptions, int numInterfaces, ptr:void pInterfaceIds, ptr:void pInterfaceRequired)
-uint32_t SLObjectItf_Realize (ptr:void self, uint32_t)
+%base 0x0600
+%host:include "libOpenSLES.itf.h"
+%guest:prefix __nb_
+
+uint32_t slCreateEngine (ptr:void pEngine, int numOptions, ptr:void pEngineOptions, int numInterfaces, ptr:void pInterfaceIds, ptr:uint32_t pInterfaceRequired)
+
+uint32_t SLBufferQueueItf_Enqueue (ptr:void self, ptr:void pBuffer, uint32_t size)
+uint32_t SLBufferQueueItf_Clear (ptr:void)
+uint32_t SLBufferQueueItf_RegisterCallback (ptr:void self, ptr:void callback, ptr:void pContext)
+
+uint32_t SLEffectSendItf_EnableEffectSend (ptr:void self, ptr:void pAuxEffect, uint32_t enable, int16_t initialLevel)
+
+uint32_t SLEngineItf_CreateAudioPlayer (ptr:void self, ptr:void pPlayer, ptr:void pAudioSrc, ptr:void pAudioSnk, uint32_t numInterfaces, ptr:void pInterfaceIds, ptr:uint32_t pInterfaceRequired)
+uint32_t SLEngineItf_CreateOutputMix (ptr:void self, ptr:void pMix, uint32_t numInterfaces, ptr:void pInterfaceIds, ptr:uint32_t pInterfaceRequired)
+
+uint32_t SLEnvironmentalReverbItf_SetEnvironmentalReverbProperties (ptr:void self, ptr:void pProperties)
+
+uint32_t SLMuteSoloItf_SetChannelMute (ptr:void self, uint8_t chan, uint32_t enable)
+uint32_t SLMuteSoloItf_GetChannelMute (ptr:void self, uint8_t chan, ptr:uint32_t pEnable)
+uint32_t SLMuteSoloItf_SetChannelSolo (ptr:void self, uint8_t chan, uint32_t solo)
+uint32_t SLMuteSoloItf_GetChannelSolo (ptr:void self, uint8_t chan, ptr:uint32_t pSolo)
+uint32_t SLMuteSoloItf_GetNumChannels (ptr:void self, ptr:uint8_t pNumChannels)
+
+uint32_t SLObjectItf_Realize (ptr:void self, uint32_t async)
+uint32_t SLObjectItf_Resume (ptr:void self, uint32_t async)
+uint32_t SLObjectItf_GetState (ptr:void self, ptr:uint32_t pState)
+uint32_t SLObjectItf_GetInterface (ptr:void self, ptr:void iid, ptr:void pInterface)
+uint32_t SLObjectItf_RegisterCallback (ptr:void self, ptr:void callback, ptr:void pContext)
+void SLObjectItf_AbortAsyncOperation (ptr:void self)
+void SLObjectItf_Destroy (ptr:void self)
+uint32_t SLObjectItf_SetPriority (ptr:void self, int32_t priority, uint32_t preemptable)
+uint32_t SLObjectItf_GetPriority (ptr:void self, ptr:int32_t pPriority, ptr:uint32_t pPreemptable)
+uint32_t SLObjectItf_SetLossOfControlInterfaces (ptr:void self, int16_t numInterfaces, ptr:void pInterfaceIDs, uint32_t enabled)
+
+uint32_t SLPlayItf_SetPlayState (ptr:void self, uint32_t state)
+uint32_t SLPlayItf_GetPlayState (ptr:void self, ptr:uint32_t pState)
+uint32_t SLPlayItf_GetDuration (ptr:void self, ptr:uint32_t pMsec)
+uint32_t SLPlayItf_GetPosition (ptr:void self, ptr:uint32_t pMsec)
+uint32_t SLPlayItf_RegisterCallback (ptr:void self, ptr:void callback, ptr:void pContext)
+uint32_t SLPlayItf_SetCallbackEventsMask (ptr:void self, uint32_t eventFlags)
+uint32_t SLPlayItf_GetCallbackEventsMask (ptr:void self, ptr:uint32_t pEventFlags)
+uint32_t SLPlayItf_SetMarkerPosition (ptr:void self, uint32_t mSec)
+uint32_t SLPlayItf_ClearMarkerPosition (ptr:void self)
+uint32_t SLPlayItf_GetMarkerPosition (ptr:void self, ptr:uint32_t pMsec)
+uint32_t SLPlayItf_SetPositionUpdatePeriod (ptr:void self, uint32_t mSec)
+uint32_t SLPlayItf_GetPositionUpdatePeriod (ptr:void self, ptr:uint32_t pMsec)
+
+uint32_t SLPlaybackRateItf_SetRate (ptr:void self, int16_t rate)
+uint32_t SLPlaybackRateItf_GetRate (ptr:void self, ptr:int16_t pRate)
+uint32_t SLPlaybackRateItf_SetPropertyConstraints (ptr:void self, uint32_t constraints)
+uint32_t SLPlaybackRateItf_GetProperties (ptr:void self, ptr:uint32_t pProperties)
+uint32_t SLPlaybackRateItf_GetCapabilitiesOfRate (ptr:void self, int16_t rate, ptr:uint32_t pCapabilities)
+uint32_t SLPlaybackRateItf_GetRateRange (ptr:void self, uint8_t index, ptr:int16_t pMinRate, ptr:int16_t pMaxRate, ptr:int16_t pStepSize, ptr:uint32_t pCapabilities)
+
+uint32_t SLSeekItf_SetPosition (ptr:void self, uint32_t pos, uint32_t seekMode)
+uint32_t SLSeekItf_SetLoop (ptr:void self, uint32_t enable, uint32_t startPos, uint32_t endPos)
+uint32_t SLSeekItf_GetLoop (ptr:void self, ptr:uint32_t pEnable, ptr:uint32_t pStartPos, ptr:uint32_t pEndPos)
+
+uint32_t SLVolumeItf_SetVolumeLevel (ptr:void self, int16_t level)
+uint32_t SLVolumeItf_GetVolumeLevel (ptr:void self, ptr:int16_t pLevel)
+uint32_t SLVolumeItf_GetMaxVolumeLevel (ptr:void self, ptr:int16_t pMaxLevel)
+uint32_t SLVolumeItf_SetMute (ptr:void self, uint32_t mute)
+uint32_t SLVolumeItf_GetMute (ptr:void self, ptr:uint32_t pMute)
+uint32_t SLVolumeItf_EnableStereoPosition (ptr:void self, uint32_t enable)
+uint32_t SLVolumeItf_IsEnabledStereoPosition (ptr:void self, ptr:uint32_t pEnable)
+uint32_t SLVolumeItf_SetStereoPosition (ptr:void self, int16_t stereoPosition)
+uint32_t SLVolumeItf_GetStereoPosition (ptr:void self, ptr:int16_t pStereoPosition)

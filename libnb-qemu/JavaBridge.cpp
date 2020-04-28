@@ -539,6 +539,7 @@ DEFINE_WRAPPER(GetFieldID)
 #define GET_FIELD_WRAPPER(name, type, format) \
 DEFINE_WRAPPER(Get##name##Field) \
 { \
+  ALOGV("Get" #name "Field(%p, %p)", reinterpret_cast<jclass>(arg1), reinterpret_cast<jfieldID>(arg2)); \
   type value = jni_env_->Get##name##Field(reinterpret_cast<jobject>(arg1), reinterpret_cast<jfieldID>(arg2)); \
   ALOGV("Get" #name "Field(%p, %p) => " #format, reinterpret_cast<jclass>(arg1), reinterpret_cast<jfieldID>(arg2), value); \
   QemuMemory::memcpy(arg3, &value, sizeof(type)); \
@@ -886,7 +887,7 @@ DEFINE_WRAPPER(RegisterNatives)
   memset(methods, 0, sizeof(methods));
   for (int i = 0; i < n_methods; i++) {
       QemuMemory::String name(g_methods[i].name), sig(g_methods[i].signature);
-      ALOGV("RegisterNatives[%p]:   %s %s", cls, name.c_str(), sig.c_str());
+      ALOGV("RegisterNatives[%p]:   %s %s %08x", cls, name.c_str(), sig.c_str(), g_methods[i].fnPtr);
       jmethodID mID = jni_env_->GetMethodID(cls, name.c_str(), sig.c_str());
       if (! mID) {
           jni_env_->ExceptionClear();
@@ -1348,6 +1349,18 @@ uint32_t wrap_java_vm(JavaVM *vm)
     ALOGW("JavaVM changed (%p != %p)", java_vm_, vm);
   java_vm_ = vm;
   return guest_java_vm_;
+}
+
+}
+
+extern "C" {
+
+JNIEnv* unwrap_jni_env(uint32_t env)
+{
+  ALOGI("unwrap_jni_env: %08x", env);
+  if (env != guest_jni_env_)
+    ALOGW("unwrap_jni_env: unexpected guest JNIEnv, %08x != %08x", env, guest_jni_env_);
+  return jni_env_;
 }
 
 }
