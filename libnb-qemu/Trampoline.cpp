@@ -28,26 +28,7 @@
 #include "QemuCpu.h"
 #include "Trampoline.h"
 
-static ffi_type *jni_to_ffi(char t)
-{
-  switch (t) {
-    case 'Z': return &ffi_type_uint8;
-    case 'B': return &ffi_type_sint8;
-    case 'C': return &ffi_type_uint16;
-    case 'S': return &ffi_type_sint16;
-    case 'I': return &ffi_type_sint32;
-    case 'J': return &ffi_type_sint64;
-    case 'F': return &ffi_type_float;
-    case 'D': return &ffi_type_double;
-    case 'L': return &ffi_type_pointer;
-    case 'V': return &ffi_type_void;
-    default:
-        ALOGE("Unsupported JNI type: %c", t);
-        return nullptr;
-  }
-}
-
-static ffi_type *type_to_ffi(char t)
+static ffi_type *type_to_ffi(const char t)
 {
   switch (t) {
     case 'c': return &ffi_type_sint8;
@@ -63,16 +44,46 @@ static ffi_type *type_to_ffi(char t)
     case 'p': return &ffi_type_pointer;
     case 'v': return &ffi_type_void;
     default:
-        ALOGE("Unsupport type: %c", t);
+        ALOGE("Unsupported type: %c", t);
         return nullptr;
   }
 }
 
-Trampoline::Trampoline(const std::string& name, uint32_t address, const std::string& shorty, bool jni)
+static char jni_to_type(const char t)
+{
+  switch (t) {
+    case 'Z': return 'C';
+    case 'B': return 'c';
+    case 'C': return 'S';
+    case 'S': return 's';
+    case 'I': return 'i';
+    case 'J': return 'l';
+    case 'F': return 'f';
+    case 'D': return 'd';
+    case 'L': return 'p';
+    case 'V': return 'v';
+    default:
+        ALOGE("Unsupported JNI type: %c", t);
+        return '?';
+  }
+}
+
+static std::string shorty_to_signature(const std::string& shorty)
+{
+  std::string signature(shorty.length() + 2, ' ');
+
+  signature[0] = jni_to_type(shorty[0]);
+  signature[1] = signature[2] = 'p';
+  for (int i = 1; i < shorty.length(); i++)
+    signature[i+2] = jni_to_type(shorty[i]);
+
+  return signature;
+}
+
+Trampoline::Trampoline(const std::string& name, uint32_t address, const std::string& signature)
      : name_(name),
        address_(address),
-       shorty_(shorty),
-       jni_(jni),
+       signature_(signature),
        host_address_(0),
        closure_(nullptr),
        rtype_(nullptr),
@@ -89,90 +100,14 @@ Trampoline::Trampoline(const std::string& name, uint32_t address, const std::str
 
   closure_ = reinterpret_cast<ffi_closure *>(ffi_closure_alloc(sizeof(ffi_closure), &code_address));
   if (closure_) {
-      if (jni) {
-          // First character in shorty is always the return value, plus the 2 mandatory JNI arguments
-          // => shorty.length() - 1 + 2
-          nargs_ = shorty.length() + 1;
-          rtype_ = jni_to_ffi(shorty[0]);
-          if (! rtype_)
-            return;
-          argtypes_ = reinterpret_cast<ffi_type **>(calloc(sizeof(ffi_type *), nargs_));
-          // JNI function signature always is (JNIEnv*, jclass/jobject, ...)
-          argtypes_[0] = &ffi_type_pointer;
-          argtypes_[1] = &ffi_type_pointer;
-          // Parse shorty to precompute argument type and calling convention (only 2 registers left,
-          // the first 2 being used by the mandatory JNI arguments)
-          for (int i = 2, nregs = 2; i < nargs_; i++) {
-              argtypes_[i] = jni_to_ffi(shorty[i-1]);
-              if (! argtypes_[i])
-                return;
-              // Check valid size and attempt to use register(s)
-              switch (argtypes_[i]->size) {
-                  case 1:
-                  case 2:
-                  case 4:
-                    if (nregs) {
-                        nregs--;
-                        continue;
-                    }
-                    break;
-                  case 8:
-                    if (nregs == 2) {
-                        nregs = 0;
-                        continue;
-                    }
-                    nregs = 0;
-                    break;
-                  default:
-                    ALOGE("Unsupported argument size: %d", argtypes_[i]->size);
-                    return;
-              }
-              // Argument must be passed in the stack
-              if (! stackoffsets_)
-                stackoffsets_ = reinterpret_cast<int *>(calloc(sizeof(int), nargs_ - i));
-              // Double-word sized arguments must be double-word aligned in the stack
-              if (argtypes_[i]->size == 8)
-                stacksize_ = ALIGN_DWORD(stacksize_);
-              // Add argument to the stack
-              stackoffsets_[nstackargs_] = stacksize_;
-              nstackargs_++;
-              stacksize_ += argtypes_[i]->size == 8 ? 8 : 4;
-          }
-          // The whole stack of arguments must be double-word aligned
-          if (stacksize_) {
-              stacksize_ = ALIGN_DWORD(stacksize_);
-          }
-      }
-      else if (name == "JNI_OnLoad") {
-          rtype_ = &ffi_type_sint;
-          argtypes_ = reinterpret_cast<ffi_type **>(calloc(sizeof(ffi_type *), 2));
-          argtypes_[0] = &ffi_type_pointer;
-          argtypes_[1] = &ffi_type_pointer;
-          nargs_ = 2;
-      }
-      else if (name == "JNI_OnUnload") {
-          rtype_ = &ffi_type_void;
-          argtypes_ = reinterpret_cast<ffi_type **>(calloc(sizeof(ffi_type *), 2));
-          argtypes_[0] = &ffi_type_pointer;
-          argtypes_[1] = &ffi_type_pointer;
-          nargs_ = 2;
-      }
-      else if (name == "ANativeActivity_onCreate") {
-          rtype_ = &ffi_type_void;
-          argtypes_ = reinterpret_cast<ffi_type **>(calloc(sizeof(ffi_type *), 3));
-          argtypes_[0] = &ffi_type_pointer;
-          argtypes_[1] = &ffi_type_pointer;
-          argtypes_[2] = &ffi_type_ulong;
-          nargs_ = 3;
-      }
-      else if (! shorty.empty()) {
-          nargs_ = shorty.length() - 1;
-          rtype_ = type_to_ffi(shorty[0]);
+      if (! signature.empty()) {
+          nargs_ = signature.length() - 1;
+          rtype_ = type_to_ffi(signature[0]);
           if (! rtype_)
             return;
           argtypes_ = reinterpret_cast<ffi_type **>(calloc(sizeof(ffi_type *), nargs_));
           for (int i = 0, nregs = 4; i < nargs_; i++) {
-              argtypes_[i] = type_to_ffi(shorty[i+1]);
+              argtypes_[i] = type_to_ffi(signature[i+1]);
               if (! argtypes_[i])
                 return;
               // Check valid size and attempt to use register(s)
@@ -256,23 +191,21 @@ void Trampoline::call(void *ret, void **args)
   if (stacksize_) {
       stack = reinterpret_cast<char *>(calloc(stacksize_, 1));
       for (int i = nregargs; i < nargs_; i++) {
+          void *arg = get_call_argument(i, args[i]);
           if (argtypes_[i]->size <= 4)
-            *(uint32_t*)(&stack[stackoffsets_[i - nregargs]]) = *(uint32_t *)args[i];
+            *(uint32_t*)(&stack[stackoffsets_[i - nregargs]]) = *(uint32_t *)arg;
           else
-            *(uint64_t*)(&stack[stackoffsets_[i - nregargs]]) = *(uint64_t *)args[i];
+            *(uint64_t*)(&stack[stackoffsets_[i - nregargs]]) = *(uint64_t *)arg;
       }
   }
 
   for (int i = 0; i < nregargs; i++) {
-      if (jni_ && rindex == 0)
-        regs[rindex++] = JavaBridge::wrap_jni_env(*(JNIEnv **)args[i]);
-      else if (rindex == 0 && (name_ == "JNI_OnLoad" || name_ == "JNI_OnUnload"))
-        regs[rindex++] = JavaBridge::wrap_java_vm(*(JavaVM **)args[i]);
-      else if (argtypes_[i]->size <= 4)
-        regs[rindex++] = *(uint32_t *)args[i];
+      void *arg = get_call_argument(i, args[i]);
+      if (argtypes_[i]->size <= 4)
+        regs[rindex++] = *(uint32_t *)arg;
       else {
           rindex = rindex ? 2 : 0;
-          *(uint64_t *)(&regs[rindex]) = *(uint64_t *)args[i];
+          *(uint64_t *)(&regs[rindex]) = *(uint64_t *)arg;
           rindex += 2;
       }
   }
@@ -306,4 +239,40 @@ void Trampoline::call(void *ret, void **args)
   }
 
   free(stack);
+}
+
+void *Trampoline::get_call_argument(int index, void *arg)
+{
+  return arg;
+}
+
+JNITrampoline::JNITrampoline(const std::string& name, uint32_t address, const std::string& shorty)
+     : Trampoline(name, address, shorty_to_signature(shorty)),
+       shorty_(shorty)
+{
+}
+
+void *JNITrampoline::get_call_argument(int index, void *arg)
+{
+  switch (index) {
+    case 0:
+      return &JavaBridge::wrap_jni_env(*(JNIEnv **)arg);
+    default:
+      return Trampoline::get_call_argument(index, arg);
+  }
+}
+
+JNILoadTrampoline::JNILoadTrampoline(const std::string& name, uint32_t address)
+     : Trampoline(name, address, name == "JNI_OnLoad" ? "ipp" : "vpp")
+{
+}
+
+void *JNILoadTrampoline::get_call_argument(int index, void *arg)
+{
+  switch (index) {
+    case 0:
+      return &JavaBridge::wrap_java_vm(*(JavaVM **)arg);
+    default:
+      return Trampoline::get_call_argument(index, arg);
+  }
 }

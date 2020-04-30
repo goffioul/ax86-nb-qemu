@@ -160,11 +160,17 @@ void *QemuBridgeImpl::get_trampoline(void *lib_handle, const std::string& name, 
         }
 
         if (ret) {
-            tramp.reset(new Trampoline(name, ret, shorty, StartsWith(name, "Java_")));
-            lib->add_trampoline(tramp);
-            ALOGI("Loaded trampoline %s from %s", name.c_str(), lib->get_name().c_str());
-
-            return tramp->get_handle();
+            if (StartsWith(name, "Java_"))
+                tramp.reset(new JNITrampoline(name, ret, shorty));
+            else if (name == "JNI_OnLoad" || name == "JNI_OnUnload")
+                tramp.reset(new JNILoadTrampoline(name, ret));
+            else
+                ALOGE("Unsupported trampoline: %s", name.c_str());
+            if (tramp) {
+                lib->add_trampoline(tramp);
+                ALOGI("Loaded trampoline %s from %s", name.c_str(), lib->get_name().c_str());
+                return tramp->get_handle();
+            }
         }
     }
 

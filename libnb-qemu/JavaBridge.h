@@ -27,8 +27,8 @@
 namespace JavaBridge {
     using android::NativeBridgeRuntimeCallbacks;
     void initialize(const NativeBridgeRuntimeCallbacks *runtime);
-    uint32_t wrap_jni_env(JNIEnv *env);
-    uint32_t wrap_java_vm(JavaVM *vm);
+    uint32_t& wrap_jni_env(JNIEnv *env);
+    uint32_t& wrap_java_vm(JavaVM *vm);
 }
 
 #endif

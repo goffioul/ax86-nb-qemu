@@ -903,7 +903,7 @@ DEFINE_WRAPPER(RegisterNatives)
       methods[i].signature = strdup(sig.c_str());
       std::ostringstream tramp_name;
       tramp_name << cls_name << "::" << methods[i].name << "::" << shorty;
-      std::shared_ptr<Trampoline> tramp(new Trampoline(tramp_name.str(), g_methods[i].fnPtr, shorty, true));
+      std::shared_ptr<Trampoline> tramp(new JNITrampoline(tramp_name.str(), g_methods[i].fnPtr, shorty));
       native_methods_[tramp->get_name()] = tramp;
       methods[i].fnPtr = tramp->get_handle();
   }
@@ -1335,7 +1335,7 @@ void initialize(const NativeBridgeRuntimeCallbacks *runtime)
   runtime_ = runtime;
 }
 
-uint32_t wrap_jni_env(JNIEnv *env)
+uint32_t& wrap_jni_env(JNIEnv *env)
 {
   jni_env_ = env;
   if (jni_env_ && ! java_vm_)
@@ -1343,7 +1343,7 @@ uint32_t wrap_jni_env(JNIEnv *env)
   return guest_jni_env_;
 }
 
-uint32_t wrap_java_vm(JavaVM *vm)
+uint32_t& wrap_java_vm(JavaVM *vm)
 {
   if (java_vm_ && vm != java_vm_)
     ALOGW("JavaVM changed (%p != %p)", java_vm_, vm);

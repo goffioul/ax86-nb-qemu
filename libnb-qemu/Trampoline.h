@@ -27,24 +27,25 @@
 class Trampoline
 {
 public:
-  Trampoline(const std::string& name, uint32_t address, const std::string& shorty, bool jni);
-  ~Trampoline();
+  Trampoline(const std::string& name, uint32_t address, const std::string& signature);
+  virtual ~Trampoline();
 
   void *get_handle() const;
   const std::string& get_name() const { return name_; }
   uint32_t get_address() const { return address_; }
-  const std::string& get_shorty() const { return shorty_; }
-  bool is_jni() const { return jni_; }
+  const std::string& get_signature() const { return signature_; }
+
+protected:
+  virtual void call(void *ret, void **args);
+  virtual void *get_call_argument(int index, void *arg);
 
 private:
   static void call_trampoline(ffi_cif *cif, void *ret, void **args, void *self);
-  void call(void *ret, void **args);
 
 private:
   std::string name_;
   uint32_t address_;
-  std::string shorty_;
-  bool jni_;
+  std::string signature_;
   void *host_address_;
   ffi_closure *closure_;
   ffi_cif cif_;
@@ -54,6 +55,27 @@ private:
   int nstackargs_;
   int stacksize_;
   int *stackoffsets_;
+};
+
+class JNITrampoline : public Trampoline
+{
+public:
+  JNITrampoline(const std::string& name, uint32_t address, const std::string& shorty);
+
+protected:
+  void *get_call_argument(int index, void *arg) override;
+
+private:
+  std::string shorty_;
+};
+
+class JNILoadTrampoline : public Trampoline
+{
+public:
+  JNILoadTrampoline(const std::string& name, uint32_t address);
+
+protected:
+  void *get_call_argument(int index, void *arg) override;
 };
 
 #endif
