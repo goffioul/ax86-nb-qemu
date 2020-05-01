@@ -59,7 +59,8 @@ int va_args_size(const char *sig, uint32_t start)
 {
   uint32_t end = start;
   for (int i = 0; sig[i]; i++) {
-      if (sig[i] == 'J' || sig[i] == 'D') {
+      // NOTE: Variadic float arguments are promoted to double by the compiler.
+      if (sig[i] == 'J' || sig[i] == 'D' || sig[i] == 'F') {
           end = ALIGN_DWORD(end);
           end += 8;
       }
@@ -116,8 +117,10 @@ void unpack_va_args(jmethodID mID, jvalue **jargs, uint32_t start)
             ALOGV("  [j]: %lld", (*jargs)[i].j);
             break;
           case 'F':
-            (*jargs)[i].f = *(jfloat*)DATA;
-            SKIP(4);
+            // NOTE: Variadic float arguments are promoted to double by the compiler.
+            REALIGN;
+            (*jargs)[i].f = *(jdouble*)DATA;
+            SKIP(8);
             ALOGV("  [f]: %f", (*jargs)[i].f);
             break;
           case 'D':
