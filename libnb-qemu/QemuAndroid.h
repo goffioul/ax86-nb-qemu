@@ -53,6 +53,8 @@ void *qemu_android_new_cpu();
 void qemu_android_delete_cpu(void *cpu);
 typedef void(*qemu_android_svc_handler_t)(void *cpu_env, int num);
 void qemu_android_register_svc_handler(qemu_android_svc_handler_t func);
+uint32_t qemu_android_h2g(void *addr);
+void *qemu_android_g2h(uint32_t addr);
 
 #ifdef __cplusplus
 };

@@ -78,4 +78,13 @@ protected:
   void *get_call_argument(int index, void *arg) override;
 };
 
+class NativeActivityTrampoline : public Trampoline
+{
+public:
+  NativeActivityTrampoline(const std::string& name, uint32_t address);
+
+protected:
+  void call(void *ret, void **args) override;
+};
+
 #endif

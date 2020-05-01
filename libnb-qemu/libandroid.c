@@ -6,6 +6,8 @@
 #include "QemuInclude.h"
 #include <android/asset_manager_jni.h>
 #include <android/asset_manager.h>
+#include <android/configuration.h>
+#include <android/input.h>
 #include <android/native_window_jni.h>
 #include <android/sensor.h>
 #include "libandroid.itf.h"
@@ -407,6 +409,147 @@ void nb_handle_ASensor_getVendor(CPUARMState *env) {
     );
     env->regs[0] = h2g_nocheck(__nb_ret);
 }
+void nb_handle_AConfiguration_delete(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    AConfiguration_delete(
+        *(void**)(&sp[0])
+    );
+}
+void nb_handle_AConfiguration_fromAssetManager(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    AConfiguration_fromAssetManager(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4])
+    );
+}
+void nb_handle_AConfiguration_getCountry(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    AConfiguration_getCountry(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4])
+    );
+}
+void nb_handle_AConfiguration_getDensity(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    int32_t __nb_ret = (int32_t)AConfiguration_getDensity(
+        *(void**)(&sp[0])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_AConfiguration_getLanguage(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    AConfiguration_getLanguage(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4])
+    );
+}
+void nb_handle_AConfiguration_new(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    void* __nb_ret = (void*)AConfiguration_new(
+    );
+    env->regs[0] = h2g_nocheck(__nb_ret);
+}
+void nb_handle_libandroid_AInputQueue_attachLooper(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libandroid_AInputQueue_attachLooper(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4]),
+        *(int*)(&sp[8]),
+        *(void**)(&sp[12]),
+        *(void**)(&sp[16])
+    );
+}
+void nb_handle_AInputQueue_detachLooper(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    AInputQueue_detachLooper(
+        *(void**)(&sp[0])
+    );
+}
+void nb_handle_AInputQueue_finishEvent(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    AInputQueue_finishEvent(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4]),
+        *(int*)(&sp[8])
+    );
+}
+void nb_handle_AInputQueue_getEvent(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    int32_t __nb_ret = (int32_t)AInputQueue_getEvent(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_AInputQueue_preDispatchEvent(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    int32_t __nb_ret = (int32_t)AInputQueue_preDispatchEvent(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_AInputEvent_getType(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    int32_t __nb_ret = (int32_t)AInputEvent_getType(
+        *(void**)(&sp[0])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_AMotionEvent_getAction(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    int32_t __nb_ret = (int32_t)AMotionEvent_getAction(
+        *(void**)(&sp[0])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_AMotionEvent_getDownTime(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    int64_t __nb_ret = (int64_t)AMotionEvent_getDownTime(
+        *(void**)(&sp[0])
+    );
+    env->regs[0] = __nb_ret & 0xffffffff;
+    env->regs[1] = (__nb_ret >> 32) & 0xffffffff;
+}
+void nb_handle_AMotionEvent_getEventTime(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    int64_t __nb_ret = (int64_t)AMotionEvent_getEventTime(
+        *(void**)(&sp[0])
+    );
+    env->regs[0] = __nb_ret & 0xffffffff;
+    env->regs[1] = (__nb_ret >> 32) & 0xffffffff;
+}
+void nb_handle_AMotionEvent_getPointerCount(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    size_t __nb_ret = (size_t)AMotionEvent_getPointerCount(
+        *(void**)(&sp[0])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_AMotionEvent_getPointerId(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    int32_t __nb_ret = (int32_t)AMotionEvent_getPointerId(
+        *(void**)(&sp[0]),
+        *(size_t*)(&sp[4])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_AMotionEvent_getX(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    float __nb_ret = (float)AMotionEvent_getX(
+        *(void**)(&sp[0]),
+        *(size_t*)(&sp[4])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_AMotionEvent_getY(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    float __nb_ret = (float)AMotionEvent_getY(
+        *(void**)(&sp[0]),
+        *(size_t*)(&sp[4])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
 __attribute__((visibility("default")))
 void nb_handle_svc(CPUARMState *env, int svc) {
     switch (svc) {
@@ -461,6 +604,25 @@ void nb_handle_svc(CPUARMState *env, int svc) {
         case 0x0730: ALOGV("ASensor_getResolution"); nb_handle_ASensor_getResolution(env); break;
         case 0x0731: ALOGV("ASensor_getType"); nb_handle_ASensor_getType(env); break;
         case 0x0732: ALOGV("ASensor_getVendor"); nb_handle_ASensor_getVendor(env); break;
+        case 0x0733: ALOGV("AConfiguration_delete"); nb_handle_AConfiguration_delete(env); break;
+        case 0x0734: ALOGV("AConfiguration_fromAssetManager"); nb_handle_AConfiguration_fromAssetManager(env); break;
+        case 0x0735: ALOGV("AConfiguration_getCountry"); nb_handle_AConfiguration_getCountry(env); break;
+        case 0x0736: ALOGV("AConfiguration_getDensity"); nb_handle_AConfiguration_getDensity(env); break;
+        case 0x0737: ALOGV("AConfiguration_getLanguage"); nb_handle_AConfiguration_getLanguage(env); break;
+        case 0x0738: ALOGV("AConfiguration_new"); nb_handle_AConfiguration_new(env); break;
+        case 0x0739: ALOGV("libandroid_AInputQueue_attachLooper"); nb_handle_libandroid_AInputQueue_attachLooper(env); break;
+        case 0x073a: ALOGV("AInputQueue_detachLooper"); nb_handle_AInputQueue_detachLooper(env); break;
+        case 0x073b: ALOGV("AInputQueue_finishEvent"); nb_handle_AInputQueue_finishEvent(env); break;
+        case 0x073c: ALOGV("AInputQueue_getEvent"); nb_handle_AInputQueue_getEvent(env); break;
+        case 0x073d: ALOGV("AInputQueue_preDispatchEvent"); nb_handle_AInputQueue_preDispatchEvent(env); break;
+        case 0x073e: ALOGV("AInputEvent_getType"); nb_handle_AInputEvent_getType(env); break;
+        case 0x073f: ALOGV("AMotionEvent_getAction"); nb_handle_AMotionEvent_getAction(env); break;
+        case 0x0740: ALOGV("AMotionEvent_getDownTime"); nb_handle_AMotionEvent_getDownTime(env); break;
+        case 0x0741: ALOGV("AMotionEvent_getEventTime"); nb_handle_AMotionEvent_getEventTime(env); break;
+        case 0x0742: ALOGV("AMotionEvent_getPointerCount"); nb_handle_AMotionEvent_getPointerCount(env); break;
+        case 0x0743: ALOGV("AMotionEvent_getPointerId"); nb_handle_AMotionEvent_getPointerId(env); break;
+        case 0x0744: ALOGV("AMotionEvent_getX"); nb_handle_AMotionEvent_getX(env); break;
+        case 0x0745: ALOGV("AMotionEvent_getY"); nb_handle_AMotionEvent_getY(env); break;
         default: LOG_ALWAYS_FATAL("Unknown SVC %08x", svc); break;
     }
 }

@@ -21,6 +21,7 @@ includes = parsed_args.i
 includes_after = parsed_args.a
 prefix = parsed_args.p or ''
 functions = []
+definitions = set()
 
 with open(parsed_args.file[0]) as f:
     for idx, line in enumerate(f):
@@ -61,6 +62,8 @@ with open(parsed_args.file[0]) as f:
                 'arguments': args,
                 'lineno': idx + 1
             })
+            if any('ptr:JNIEnv' in arg for arg in args):
+                definitions.add('extern void* unwrap_jni_env(void* env);')
 
 def isPointerType(type):
     return type.startswith('ptr:') or \
@@ -101,8 +104,11 @@ def genHostLib():
         for inc in includes:
             print('#include %s' % inc)
 
-    print('')
-    print('extern void* unwrap_jni_env(void* env);')
+    if definitions:
+        print('')
+        for d in definitions:
+            print(d)
+
     print('')
 
     for i, func in enumerate(functions):

@@ -1,6 +1,8 @@
 %base 0x0700
 %host:include <android/asset_manager_jni.h>
 %host:include <android/asset_manager.h>
+%host:include <android/configuration.h>
+%host:include <android/input.h>
 %host:include <android/native_window_jni.h>
 %host:include <android/sensor.h>
 %host:include "libandroid.itf.h"
@@ -65,3 +67,27 @@ ptr:void ASensor_getName (ptr:void sensor)
 float ASensor_getResolution (ptr:void sensor)
 int ASensor_getType (ptr:void sensor)
 ptr:void ASensor_getVendor (ptr:void sensor)
+
+void AConfiguration_delete (ptr:void config)
+void AConfiguration_fromAssetManager (ptr:void out, ptr:void am)
+void AConfiguration_getCountry (ptr:void config, ptr:char outCountry)
+int32_t AConfiguration_getDensity (ptr:void config)
+void AConfiguration_getLanguage (ptr:void config, ptr:char outLanguage)
+ptr:void AConfiguration_new (void)
+
+host: void libandroid_AInputQueue_attachLooper (ptr:void queue, ptr:void looper, int ident, ptr:void callback, ptr:void data)
+guest: void AInputQueue_attachLooper (ptr:void queue, ptr:void looper, int ident, ptr:void callback, ptr:void data)
+void AInputQueue_detachLooper (ptr:void queue)
+void AInputQueue_finishEvent (ptr:void queue, ptr:void event, int handled)
+int32_t AInputQueue_getEvent (ptr:void queue, ptr:void outEvent)
+int32_t AInputQueue_preDispatchEvent (ptr:void queue, ptr:event event)
+
+int32_t AInputEvent_getType (ptr:void event)
+
+int32_t AMotionEvent_getAction (ptr:void event)
+int64_t AMotionEvent_getDownTime (ptr:void event)
+int64_t AMotionEvent_getEventTime (ptr:void event)
+size_t AMotionEvent_getPointerCount (ptr:void event)
+int32_t AMotionEvent_getPointerId (ptr:void event, size_t pointer_index)
+float AMotionEvent_getX (ptr:void event, size_t pointer_index)
+float AMotionEvent_getY (ptr:void event, size_t pointer_index)

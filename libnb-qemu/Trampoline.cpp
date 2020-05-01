@@ -25,7 +25,9 @@
 #include <string.h>
 #include <log/log.h>
 #include "JavaBridge.h"
+#include "QemuAndroid.h"
 #include "QemuCpu.h"
+#include "QemuMemory.h"
 #include "Trampoline.h"
 
 static ffi_type *type_to_ffi(const char t)
@@ -275,4 +277,143 @@ void *JNILoadTrampoline::get_call_argument(int index, void *arg)
     default:
       return Trampoline::get_call_argument(index, arg);
   }
+}
+
+#include <android/native_activity.h>
+
+#define CALLBACK_ONSTART                        0
+#define CALLBACK_ONRESUME                       1
+#define CALLBACK_ONSAVEINSTANCESTATE            2
+#define CALLBACK_ONPAUSE                        3
+#define CALLBACK_ONSTOP                         4
+#define CALLBACK_ONDESTROY                      5
+#define CALLBACK_ONWINDOWFOCUSCHANGED           6
+#define CALLBACK_ONNATIVEWINDOWCREATED          7
+#define CALLBACK_ONNATIVEWINDOWRESIZED          8
+#define CALLBACK_ONNATIVEWINDOWREDRAWNEEDED     9
+#define CALLBACK_ONNATIVEWINDOWDESTROYED        10
+#define CALLBACK_ONINPUTQUEUECREATED            11
+#define CALLBACK_ONINPUTQUEUEDESTROYED          12
+#define CALLBACK_ONCONTENTRECTCHANGED           13
+#define CALLBACK_ONCONFIGURATIONCHANGED         14
+#define CALLBACK_ONLOWMEMORY                    15
+
+struct GuestNativeActivity : public ANativeActivity {
+    ANativeActivity *native_;
+    ANativeActivityCallbacks callbacks_;
+};
+
+static uint32_t GuestNativeActivity_getCallback(ANativeActivity *activity, int index)
+{
+  QemuMemory::Region<GuestNativeActivity> guest_activity((uint32_t) activity->instance);
+  return (uint32_t) ((void **) guest_activity.get()->callbacks)[index];
+}
+
+#define GNA_CALLBACK(name, index) \
+static void GuestNativeActivity_ ## name (ANativeActivity *activity) \
+{ \
+  uint32_t callback = GuestNativeActivity_getCallback(activity, index); \
+  if (callback) { \
+      ALOGI(#name); \
+      QemuCpu::get()->call(callback, (uint32_t) activity->instance); \
+  } \
+}
+
+#define GNA_CALLBACK_ARG(name, T, index) \
+static void GuestNativeActivity_ ## name (ANativeActivity *activity, T arg) \
+{ \
+  uint32_t callback = GuestNativeActivity_getCallback(activity, index); \
+  if (callback) { \
+      ALOGI(#name); \
+      QemuCpu::get()->call(callback, (uint32_t) activity->instance, (uint32_t) arg); \
+  } \
+}
+
+GNA_CALLBACK(onStart, CALLBACK_ONSTART)
+GNA_CALLBACK(onResume, CALLBACK_ONRESUME)
+GNA_CALLBACK(onPause, CALLBACK_ONPAUSE)
+GNA_CALLBACK(onStop, CALLBACK_ONSTOP)
+GNA_CALLBACK_ARG(onWindowFocusChanged, int, CALLBACK_ONWINDOWFOCUSCHANGED)
+GNA_CALLBACK_ARG(onNativeWindowCreated, ANativeWindow*, CALLBACK_ONNATIVEWINDOWCREATED)
+GNA_CALLBACK_ARG(onNativeWindowResized, ANativeWindow*, CALLBACK_ONNATIVEWINDOWRESIZED)
+GNA_CALLBACK_ARG(onNativeWindowRedrawNeeded, ANativeWindow*, CALLBACK_ONNATIVEWINDOWREDRAWNEEDED)
+GNA_CALLBACK_ARG(onNativeWindowDestroyed, ANativeWindow*, CALLBACK_ONNATIVEWINDOWDESTROYED)
+GNA_CALLBACK_ARG(onInputQueueCreated, AInputQueue*, CALLBACK_ONINPUTQUEUECREATED)
+GNA_CALLBACK_ARG(onInputQueueDestroyed, AInputQueue*, CALLBACK_ONINPUTQUEUEDESTROYED)
+GNA_CALLBACK_ARG(onContentRectChanged, const ARect*, CALLBACK_ONCONTENTRECTCHANGED)
+GNA_CALLBACK(onConfigurationChanged, CALLBACK_ONCONFIGURATIONCHANGED)
+GNA_CALLBACK(onLowMemory, CALLBACK_ONLOWMEMORY)
+
+static void* GuestNativeActivity_onSaveInstanceState(ANativeActivity *activity, size_t *outSize)
+{
+  uint32_t callback = GuestNativeActivity_getCallback(activity, CALLBACK_ONSAVEINSTANCESTATE);
+  if (callback) {
+      ALOGW("GuestNativeActivity_onSaveInstanceState: ignoring for the time being");
+      // QemuCpu::get()->call(callback, (uint32_t) activity->instance, (uint32_t) arg);
+  }
+  return nullptr;
+}
+
+static void GuestNativeActivity_onDestroy(ANativeActivity *activity)
+{
+  uint32_t callback = GuestNativeActivity_getCallback(activity, CALLBACK_ONDESTROY);
+  if (callback) {
+      ALOGI("GuestNativeActivity_onDestroy");
+      QemuCpu::get()->call(callback, (uint32_t) activity->instance);
+  }
+  qemu_android_free((uint32_t) activity->instance);
+  activity->instance = nullptr;
+}
+
+NativeActivityTrampoline::NativeActivityTrampoline(const std::string& name, uint32_t address)
+     : Trampoline(name, address, "vppI")
+{
+}
+
+void NativeActivityTrampoline::call(void *ret, void **args)
+{
+  ANativeActivity *host_activity = *(ANativeActivity **)args[0];
+  uint32_t guest_activity_p = qemu_android_malloc(sizeof(GuestNativeActivity));
+
+  // Setup host ANativeActivity
+  host_activity->instance = (void *) guest_activity_p;
+  host_activity->callbacks->onStart = GuestNativeActivity_onStart;
+  host_activity->callbacks->onResume = GuestNativeActivity_onResume;
+  host_activity->callbacks->onSaveInstanceState = GuestNativeActivity_onSaveInstanceState;
+  host_activity->callbacks->onPause = GuestNativeActivity_onPause;
+  host_activity->callbacks->onStop = GuestNativeActivity_onStop;
+  host_activity->callbacks->onDestroy = GuestNativeActivity_onDestroy;
+  host_activity->callbacks->onWindowFocusChanged = GuestNativeActivity_onWindowFocusChanged;
+  host_activity->callbacks->onNativeWindowCreated = GuestNativeActivity_onNativeWindowCreated;
+  host_activity->callbacks->onNativeWindowResized = GuestNativeActivity_onNativeWindowResized;
+  host_activity->callbacks->onNativeWindowRedrawNeeded = GuestNativeActivity_onNativeWindowRedrawNeeded;
+  host_activity->callbacks->onNativeWindowDestroyed = GuestNativeActivity_onNativeWindowDestroyed;
+  host_activity->callbacks->onInputQueueCreated = GuestNativeActivity_onInputQueueCreated;
+  host_activity->callbacks->onInputQueueDestroyed = GuestNativeActivity_onInputQueueDestroyed;
+  host_activity->callbacks->onContentRectChanged = GuestNativeActivity_onContentRectChanged;
+  host_activity->callbacks->onConfigurationChanged = GuestNativeActivity_onConfigurationChanged;
+  host_activity->callbacks->onLowMemory = GuestNativeActivity_onLowMemory;
+
+  // Setup guest ANativeActivity
+  {
+      QemuMemory::Region<GuestNativeActivity> guest_activity_r(guest_activity_p);
+      GuestNativeActivity *guest_activity = guest_activity_r.get();
+
+      guest_activity->assetManager = host_activity->assetManager;
+      guest_activity->callbacks = (ANativeActivityCallbacks *) qemu_android_h2g(&guest_activity->callbacks_);
+      guest_activity->clazz = host_activity->clazz;
+      guest_activity->env = (JNIEnv *) JavaBridge::wrap_jni_env(host_activity->env);
+      guest_activity->externalDataPath = (const char *) qemu_android_h2g((void *) host_activity->externalDataPath);
+      guest_activity->internalDataPath = (const char *) qemu_android_h2g((void *) host_activity->internalDataPath);
+      guest_activity->obbPath = (const char *) qemu_android_h2g((void *) host_activity->obbPath);
+      guest_activity->sdkVersion = host_activity->sdkVersion;
+      guest_activity->vm = (JavaVM *) JavaBridge::wrap_java_vm(host_activity->vm);
+
+      guest_activity->native_ = host_activity;
+      bzero(&guest_activity->callbacks_, sizeof(ANativeActivityCallbacks));
+  }
+
+  // Call trampoline
+  void *new_args[3] = { &guest_activity_p, args[1], args[2] };
+  Trampoline::call(ret, new_args);
 }

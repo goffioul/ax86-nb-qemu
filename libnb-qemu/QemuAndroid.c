@@ -109,6 +109,16 @@ void qemu_android_release_memory(void *ptr, uint32_t addr, size_t length)
     unlock_user(ptr, addr, length);
 }
 
+uint32_t qemu_android_h2g(void *addr)
+{
+    return h2g_nocheck(addr);
+}
+
+void *qemu_android_g2h(uint32_t addr)
+{
+    return g2h(addr);
+}
+
 void qemu_android_register_syscall_handler(qemu_android_syscall_handler_t func)
 {
     syscall_handler = func;

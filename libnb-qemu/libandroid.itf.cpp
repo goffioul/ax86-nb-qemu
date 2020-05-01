@@ -7,17 +7,22 @@ static std::map<void*, std::shared_ptr<Trampoline>> sCallbacks;
 
 static void* get_trampoline(void *callback, const char *name, const char *sig)
 {
-  std::map<void*, std::shared_ptr<Trampoline>>::const_iterator it = sCallbacks.find(callback);
-  std::shared_ptr<Trampoline> nativeCallback;
+  if (callback) {
+      std::map<void*, std::shared_ptr<Trampoline>>::const_iterator it = sCallbacks.find(callback);
+      std::shared_ptr<Trampoline> nativeCallback;
 
-  if (it != sCallbacks.end())
-    nativeCallback = it->second;
-  else {
-      nativeCallback.reset(new Trampoline(name, (uint32_t) callback, sig));
-      sCallbacks[callback] = nativeCallback;
+      if (it != sCallbacks.end())
+        nativeCallback = it->second;
+      else {
+          nativeCallback.reset(new Trampoline(name, (uint32_t) callback, sig));
+          sCallbacks[callback] = nativeCallback;
+      }
+
+      return nativeCallback->get_handle();
   }
-
-  return nativeCallback->get_handle();
+  else {
+      return nullptr;
+  }
 }
 
 // FIXME: This is leaky, trampolines are never removed
@@ -33,4 +38,10 @@ ASensorEventQueue* libandroid_ASensorManager_createEventQueue(ASensorManager* ma
 {
   ALooper_callbackFunc nativeCallback = (ALooper_callbackFunc) get_trampoline((void *) callback, "ASensorEventQueue_Callback", "iiip");
   return ASensorManager_createEventQueue(manager, looper, ident, nativeCallback, data);
+}
+
+void libandroid_AInputQueue_attachLooper(AInputQueue* queue, ALooper* looper, int ident, ALooper_callbackFunc callback, void* data)
+{
+  ALooper_callbackFunc nativeCallback = (ALooper_callbackFunc) get_trampoline((void *) callback, "AInputQueue_Callback", "iiip");
+  return AInputQueue_attachLooper(queue, looper, ident, nativeCallback, data);
 }

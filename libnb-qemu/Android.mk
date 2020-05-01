@@ -34,7 +34,7 @@ LOCAL_SRC_FILES := \
 	QemuCpu.cpp \
 	Trampoline.cpp \
 	libnb-qemu.cpp
-LOCAL_SHARED_LIBRARIES := libnativehelper liblog libz libbase libdl
+LOCAL_SHARED_LIBRARIES := libandroid libnativehelper liblog libz libbase libdl
 LOCAL_STATIC_LIBRARIES := libqemu-core libqemu-target libqemu-glib libqemu-capstone libffi
 LOCAL_CFLAGS := $(LOCAL_QEMU_CFLAGS)
 LOCAL_C_INCLUDES := system/core/libnativebridge/include
