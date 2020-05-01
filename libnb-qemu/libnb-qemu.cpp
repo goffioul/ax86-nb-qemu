@@ -31,7 +31,7 @@ namespace android {
 static bool nb_qemu_initialize(const NativeBridgeRuntimeCallbacks* runtime_cbs, const char* private_dir, const char* instruction_set)
 {
     ALOGI("initialize");
-    if (QemuBridge::initialize()) {
+    if (QemuBridge::initialize(private_dir)) {
         JavaBridge::initialize(runtime_cbs);
         OsBridge::initialize();
         return true;

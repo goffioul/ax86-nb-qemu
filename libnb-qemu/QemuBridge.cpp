@@ -43,7 +43,7 @@ public:
     ~QemuBridgeImpl() {}
 
 public:
-    bool initialize();
+    bool initialize(const std::string& tmpdir);
     bool is_path_supported(const std::string& path) const;
     void *load_library(const std::string& filename);
     void *get_trampoline(void *lib_handle, const std::string& name, const std::string& shorty);
@@ -63,9 +63,9 @@ private:
 };
 static std::shared_ptr<QemuBridgeImpl> impl_;
 
-bool QemuBridgeImpl::initialize()
+bool QemuBridgeImpl::initialize(const std::string& tmpdir)
 {
-    if (QemuCore::initialize()) {
+    if (QemuCore::initialize(tmpdir.c_str())) {
         initialize_ = QemuCore::lookup_symbol("nb_qemu_initialize");
         ALOGV("QemuBridge::initialize_: %p", reinterpret_cast<void *>(initialize_));
         load_library_ = QemuCore::lookup_symbol("nb_qemu_loadLibrary");
@@ -189,11 +189,11 @@ const char *QemuBridgeImpl::get_error()
 
 namespace QemuBridge {
 
-bool initialize()
+bool initialize(const std::string& tmpdir)
 {
     QemuBridgeImpl *impl = new QemuBridgeImpl();
 
-    if (impl->initialize()) {
+    if (impl->initialize(tmpdir)) {
         impl_.reset(impl);
         return true;
     }

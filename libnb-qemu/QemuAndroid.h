@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-int qemu_android_initialize();
+int qemu_android_initialize(const char *tmpdir);
 uint32_t qemu_android_lookup_symbol(const char *name);
 uint32_t qemu_android_malloc(size_t size);
 void qemu_android_free(uint32_t addr);

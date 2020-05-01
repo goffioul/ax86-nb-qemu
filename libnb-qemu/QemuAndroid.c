@@ -30,9 +30,9 @@
 static uint32_t thread_allocate_;
 static uint32_t thread_deallocate_;
 
-int qemu_android_initialize()
+int qemu_android_initialize(const char *tmpdir)
 {
-    char *argv[] = { LOG_TAG, "-d", QEMU_LOG_MASK, "-E", "LD_DEBUG=1", "/system/lib/libnb-qemu-guest.so" };
+    char *argv[] = { LOG_TAG, "-d", QEMU_LOG_MASK, "-E", "LD_DEBUG=1", "-T", tmpdir, "/system/lib/libnb-qemu-guest.so" };
     int result = qemu_main(sizeof(argv)/sizeof(char*), argv, NULL);
     if (result == 0) {
         thread_allocate_ = qemu_android_lookup_symbol("nb_qemu_allocateThread");

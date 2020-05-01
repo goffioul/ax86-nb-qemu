@@ -24,7 +24,7 @@
 #include <string>
 
 namespace QemuBridge {
-    bool initialize();
+    bool initialize(const std::string& tmpdir);
     bool is_supported(const std::string& libpath);
     bool is_path_supported(const std::string& path);
     void *load_library(const std::string& filename);
