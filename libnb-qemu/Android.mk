@@ -43,7 +43,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libnb-qemu-EGL
-LOCAL_SRC_FILES := libEGL.c
+LOCAL_SRC_FILES := libEGL.c libEGL.itf.cpp
 LOCAL_CFLAGS := \
 	-fvisibility=hidden $(LOCAL_QEMU_CFLAGS) \
 	-DGL_GLEXT_PROTOTYPES -DEGL_EGLEXT_PROTOTYPES

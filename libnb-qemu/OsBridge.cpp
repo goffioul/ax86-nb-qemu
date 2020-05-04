@@ -24,7 +24,7 @@ struct HandlerInfo {
 
 static std::mutex g_mutex_;
 static struct HandlerInfo g_handlers_[HANDLER_MAX] = {
-    [HANDLER_EGL] = { 0x0100, 81, "libnb-qemu-EGL.so", nullptr },
+    [HANDLER_EGL] = { 0x0100, 83, "libnb-qemu-EGL.so", nullptr },
     [HANDLER_GLESV1_CM] = { 0x0400, 257, "libnb-qemu-GLESv1_CM.so", nullptr },
     [HANDLER_GLESV3] = { 0x1000, 399, "libnb-qemu-GLESv3.so", nullptr },
     [HANDLER_OPENSLES] = { 0x0600, 53, "libnb-qemu-OpenSLES.so", nullptr },

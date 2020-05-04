@@ -1,8 +1,8 @@
 %base 0x0100
 %host:include <EGL/egl.h>
 %host:include <EGL/eglext.h>
-%host:include <libEGL.def.h>
-%guest:include <libEGL.common.c>
+%host:include <libEGL.itf.h>
+
 EGLBoolean eglChooseConfig (EGLDisplay dpy, ptr:EGLint attrib_list, ptr:EGLConfig configs, EGLint config_size, ptr:EGLint num_config)
 EGLBoolean eglCopyBuffers (EGLDisplay dpy, EGLSurface surface, EGLNativePixmapType target)
 EGLContext eglCreateContext (EGLDisplay dpy, EGLConfig config, EGLContext share_context, ptr:EGLint attrib_list)
@@ -84,3 +84,5 @@ EGLuint64NV eglGetSystemTimeNV (void)
 int _ZN7android18egl_get_init_countEPv (EGLDisplay dpy)
 void _ZN7android22egl_set_cache_filenameEPKc (ptr:char filename)
 void _Z13eglBeginFramePvS_ (EGLDisplay dpy, EGLSurface surface)
+ptr:void libEGL_eglGetProcAddress (ptr:char procname)
+void libEGL_glDiscardFramebufferEXT (GLenum target, GLsizei numAttachments, ptr:GLenum attachments)

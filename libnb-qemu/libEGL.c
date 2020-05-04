@@ -6,7 +6,7 @@
 #include "QemuInclude.h"
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-#include <libEGL.def.h>
+#include <libEGL.itf.h>
 
 void nb_handle_eglChooseConfig(CPUARMState *env) {
     char *sp = g2h(env->regs[13]);
@@ -709,6 +709,21 @@ void nb_handle__Z13eglBeginFramePvS_(CPUARMState *env) {
         *(void**)(&sp[4])
     );
 }
+void nb_handle_libEGL_eglGetProcAddress(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    void* __nb_ret = (void*)libEGL_eglGetProcAddress(
+        *(void**)(&sp[0])
+    );
+    env->regs[0] = h2g_nocheck(__nb_ret);
+}
+void nb_handle_libEGL_glDiscardFramebufferEXT(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glDiscardFramebufferEXT(
+        *(GLenum*)(&sp[0]),
+        *(GLsizei*)(&sp[4]),
+        *(void**)(&sp[8])
+    );
+}
 __attribute__((visibility("default")))
 void nb_handle_svc(CPUARMState *env, int svc) {
     switch (svc) {
@@ -793,6 +808,8 @@ void nb_handle_svc(CPUARMState *env, int svc) {
         case 0x014e: ALOGV("_ZN7android18egl_get_init_countEPv"); nb_handle__ZN7android18egl_get_init_countEPv(env); break;
         case 0x014f: ALOGV("_ZN7android22egl_set_cache_filenameEPKc"); nb_handle__ZN7android22egl_set_cache_filenameEPKc(env); break;
         case 0x0150: ALOGV("_Z13eglBeginFramePvS_"); nb_handle__Z13eglBeginFramePvS_(env); break;
+        case 0x0151: ALOGV("libEGL_eglGetProcAddress"); nb_handle_libEGL_eglGetProcAddress(env); break;
+        case 0x0152: ALOGV("libEGL_glDiscardFramebufferEXT"); nb_handle_libEGL_glDiscardFramebufferEXT(env); break;
         default: LOG_ALWAYS_FATAL("Unknown SVC %08x", svc); break;
     }
 }
