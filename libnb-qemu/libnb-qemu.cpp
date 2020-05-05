@@ -20,6 +20,7 @@
 
 #define LOG_TAG "libnb-qemu"
 
+#include <stdlib.h>
 #include <log/log.h>
 #include <nativebridge/native_bridge.h>
 #include "QemuBridge.h"
@@ -31,7 +32,7 @@ namespace android {
 static bool nb_qemu_initialize(const NativeBridgeRuntimeCallbacks* runtime_cbs, const char* private_dir, const char* instruction_set)
 {
     ALOGI("initialize");
-    if (QemuBridge::initialize(private_dir)) {
+    if (QemuBridge::initialize(getprogname(), private_dir)) {
         JavaBridge::initialize(runtime_cbs);
         OsBridge::initialize();
         return true;

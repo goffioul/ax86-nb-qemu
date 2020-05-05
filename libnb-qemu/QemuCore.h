@@ -28,7 +28,7 @@ namespace QemuCore {
 using syscall_handler_t = ::qemu_android_syscall_handler_t;
 using svc_handler_t = ::qemu_android_svc_handler_t;
 
-inline bool initialize(const char *tmpdir) { return qemu_android_initialize(tmpdir) == 0; }
+inline bool initialize(const char *procname, const char *tmpdir) { return qemu_android_initialize(procname, tmpdir) == 0; }
 inline uint32_t lookup_symbol(const char *name) { return qemu_android_lookup_symbol(name); }
 inline void register_syscall_handler(syscall_handler_t func) { qemu_android_register_syscall_handler(func); }
 inline void register_svc_handler(svc_handler_t func) { qemu_android_register_svc_handler(func); }
