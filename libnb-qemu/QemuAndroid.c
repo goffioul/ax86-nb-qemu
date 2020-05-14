@@ -19,7 +19,7 @@
  */
 
 #define LOG_TAG "libnb-qemu"
-#define LOG_NDEBUG 0
+//#define LOG_NDEBUG 0
 
 #include <log/log.h>
 #include "QemuAndroid.h"

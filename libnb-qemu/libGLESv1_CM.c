@@ -1,5 +1,5 @@
 #define LOG_TAG "libnb-qemu"
-#define LOG_NDEBUG 0
+//#define LOG_NDEBUG 0
 
 #include <stdint.h>
 #include <log/log.h>
