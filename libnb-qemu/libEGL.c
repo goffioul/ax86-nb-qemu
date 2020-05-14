@@ -1,5 +1,5 @@
 #define LOG_TAG "libnb-qemu"
-#define LOG_NDEBUG 0
+//#define LOG_NDEBUG 0
 
 #include <stdint.h>
 #include <log/log.h>
@@ -724,6 +724,157 @@ void nb_handle_libEGL_glDiscardFramebufferEXT(CPUARMState *env) {
         *(void**)(&sp[8])
     );
 }
+void nb_handle_libEGL_glDebugMessageControlKHR(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glDebugMessageControlKHR(
+        *(GLenum*)(&sp[0]),
+        *(GLenum*)(&sp[4]),
+        *(GLenum*)(&sp[8]),
+        *(GLsizei*)(&sp[12]),
+        *(void**)(&sp[16]),
+        *(GLboolean*)(&sp[20])
+    );
+}
+void nb_handle_libEGL_glDebugMessageInsertKHR(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glDebugMessageInsertKHR(
+        *(GLenum*)(&sp[0]),
+        *(GLenum*)(&sp[4]),
+        *(GLuint*)(&sp[8]),
+        *(GLenum*)(&sp[12]),
+        *(GLsizei*)(&sp[16]),
+        *(void**)(&sp[20])
+    );
+}
+void nb_handle_libEGL_glPushDebugGroupKHR(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glPushDebugGroupKHR(
+        *(GLenum*)(&sp[0]),
+        *(GLuint*)(&sp[4]),
+        *(GLsizei*)(&sp[8]),
+        *(void**)(&sp[12])
+    );
+}
+void nb_handle_libEGL_glPopDebugGroupKHR(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glPopDebugGroupKHR(
+    );
+}
+void nb_handle_libEGL_glObjectLabelKHR(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glObjectLabelKHR(
+        *(GLenum*)(&sp[0]),
+        *(GLuint*)(&sp[4]),
+        *(GLsizei*)(&sp[8]),
+        *(void**)(&sp[12])
+    );
+}
+void nb_handle_libEGL_glGetObjectLabelKHR(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glGetObjectLabelKHR(
+        *(GLenum*)(&sp[0]),
+        *(GLuint*)(&sp[4]),
+        *(GLsizei*)(&sp[8]),
+        *(void**)(&sp[12]),
+        *(void**)(&sp[16])
+    );
+}
+void nb_handle_libEGL_glInsertEventMarkerEXT(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glInsertEventMarkerEXT(
+        *(GLsizei*)(&sp[0]),
+        *(void**)(&sp[4])
+    );
+}
+void nb_handle_libEGL_glPushGroupMarkerEXT(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glPushGroupMarkerEXT(
+        *(GLsizei*)(&sp[0]),
+        *(void**)(&sp[4])
+    );
+}
+void nb_handle_libEGL_glPopGroupMarkerEXT(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glPopGroupMarkerEXT(
+    );
+}
+void nb_handle_libEGL_glGetQueryObjectui64vEXT(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glGetQueryObjectui64vEXT(
+        *(GLuint*)(&sp[0]),
+        *(GLenum*)(&sp[4]),
+        *(void**)(&sp[8])
+    );
+}
+void nb_handle_libEGL_glCopyImageSubDataOES(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glCopyImageSubDataOES(
+        *(GLuint*)(&sp[0]),
+        *(GLenum*)(&sp[4]),
+        *(GLint*)(&sp[8]),
+        *(GLint*)(&sp[12]),
+        *(GLint*)(&sp[16]),
+        *(GLint*)(&sp[20]),
+        *(GLuint*)(&sp[24]),
+        *(GLenum*)(&sp[28]),
+        *(GLint*)(&sp[32]),
+        *(GLint*)(&sp[36]),
+        *(GLint*)(&sp[40]),
+        *(GLint*)(&sp[44]),
+        *(GLsizei*)(&sp[48]),
+        *(GLsizei*)(&sp[52]),
+        *(GLsizei*)(&sp[56])
+    );
+}
+void nb_handle_libEGL_glDrawElementsBaseVertexOES(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glDrawElementsBaseVertexOES(
+        *(GLenum*)(&sp[0]),
+        *(GLsizei*)(&sp[4]),
+        *(GLenum*)(&sp[8]),
+        *(void**)(&sp[12]),
+        *(GLint*)(&sp[16])
+    );
+}
+void nb_handle_libEGL_glDrawRangeElementsBaseVertexOES(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glDrawRangeElementsBaseVertexOES(
+        *(GLenum*)(&sp[0]),
+        *(GLuint*)(&sp[4]),
+        *(GLuint*)(&sp[8]),
+        *(GLsizei*)(&sp[12]),
+        *(GLenum*)(&sp[16]),
+        *(void**)(&sp[20]),
+        *(GLint*)(&sp[24])
+    );
+}
+void nb_handle_libEGL_glDrawElementsInstancedBaseVertexOES(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glDrawElementsInstancedBaseVertexOES(
+        *(GLenum*)(&sp[0]),
+        *(GLsizei*)(&sp[4]),
+        *(GLenum*)(&sp[8]),
+        *(void**)(&sp[12]),
+        *(GLsizei*)(&sp[16]),
+        *(GLint*)(&sp[20])
+    );
+}
+void nb_handle_libEGL_glMultiDrawElementsBaseVertexEXT(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glMultiDrawElementsBaseVertexEXT(
+        *(GLenum*)(&sp[0]),
+        *(void**)(&sp[4]),
+        *(GLenum*)(&sp[8]),
+        *(void**)(&sp[12]),
+        *(GLsizei*)(&sp[16]),
+        *(void**)(&sp[20])
+    );
+}
+void nb_handle_libEGL_glBlendBarrierKHR(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    libEGL_glBlendBarrierKHR(
+    );
+}
 __attribute__((visibility("default")))
 void nb_handle_svc(CPUARMState *env, int svc) {
     switch (svc) {
@@ -810,6 +961,22 @@ void nb_handle_svc(CPUARMState *env, int svc) {
         case 0x0150: ALOGV("_Z13eglBeginFramePvS_"); nb_handle__Z13eglBeginFramePvS_(env); break;
         case 0x0151: ALOGV("libEGL_eglGetProcAddress"); nb_handle_libEGL_eglGetProcAddress(env); break;
         case 0x0152: ALOGV("libEGL_glDiscardFramebufferEXT"); nb_handle_libEGL_glDiscardFramebufferEXT(env); break;
+        case 0x0153: ALOGV("libEGL_glDebugMessageControlKHR"); nb_handle_libEGL_glDebugMessageControlKHR(env); break;
+        case 0x0154: ALOGV("libEGL_glDebugMessageInsertKHR"); nb_handle_libEGL_glDebugMessageInsertKHR(env); break;
+        case 0x0155: ALOGV("libEGL_glPushDebugGroupKHR"); nb_handle_libEGL_glPushDebugGroupKHR(env); break;
+        case 0x0156: ALOGV("libEGL_glPopDebugGroupKHR"); nb_handle_libEGL_glPopDebugGroupKHR(env); break;
+        case 0x0157: ALOGV("libEGL_glObjectLabelKHR"); nb_handle_libEGL_glObjectLabelKHR(env); break;
+        case 0x0158: ALOGV("libEGL_glGetObjectLabelKHR"); nb_handle_libEGL_glGetObjectLabelKHR(env); break;
+        case 0x0159: ALOGV("libEGL_glInsertEventMarkerEXT"); nb_handle_libEGL_glInsertEventMarkerEXT(env); break;
+        case 0x015a: ALOGV("libEGL_glPushGroupMarkerEXT"); nb_handle_libEGL_glPushGroupMarkerEXT(env); break;
+        case 0x015b: ALOGV("libEGL_glPopGroupMarkerEXT"); nb_handle_libEGL_glPopGroupMarkerEXT(env); break;
+        case 0x015c: ALOGV("libEGL_glGetQueryObjectui64vEXT"); nb_handle_libEGL_glGetQueryObjectui64vEXT(env); break;
+        case 0x015d: ALOGV("libEGL_glCopyImageSubDataOES"); nb_handle_libEGL_glCopyImageSubDataOES(env); break;
+        case 0x015e: ALOGV("libEGL_glDrawElementsBaseVertexOES"); nb_handle_libEGL_glDrawElementsBaseVertexOES(env); break;
+        case 0x015f: ALOGV("libEGL_glDrawRangeElementsBaseVertexOES"); nb_handle_libEGL_glDrawRangeElementsBaseVertexOES(env); break;
+        case 0x0160: ALOGV("libEGL_glDrawElementsInstancedBaseVertexOES"); nb_handle_libEGL_glDrawElementsInstancedBaseVertexOES(env); break;
+        case 0x0161: ALOGV("libEGL_glMultiDrawElementsBaseVertexEXT"); nb_handle_libEGL_glMultiDrawElementsBaseVertexEXT(env); break;
+        case 0x0162: ALOGV("libEGL_glBlendBarrierKHR"); nb_handle_libEGL_glBlendBarrierKHR(env); break;
         default: LOG_ALWAYS_FATAL("Unknown SVC %08x", svc); break;
     }
 }

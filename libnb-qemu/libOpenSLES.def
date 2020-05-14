@@ -5,7 +5,8 @@
 uint32_t slCreateEngine (ptr:void pEngine, int numOptions, ptr:void pEngineOptions, int numInterfaces, ptr:void pInterfaceIds, ptr:uint32_t pInterfaceRequired)
 
 uint32_t SLBufferQueueItf_Enqueue (ptr:void self, ptr:void pBuffer, uint32_t size)
-uint32_t SLBufferQueueItf_Clear (ptr:void)
+uint32_t SLBufferQueueItf_Clear (ptr:void self)
+uint32_t SLBufferQueueItf_GetState (ptr:void self, ptr:void pState)
 uint32_t SLBufferQueueItf_RegisterCallback (ptr:void self, ptr:void callback, ptr:void pContext)
 
 uint32_t SLEffectSendItf_EnableEffectSend (ptr:void self, ptr:void pAuxEffect, uint32_t enable, int16_t initialLevel)
@@ -65,3 +66,13 @@ uint32_t SLVolumeItf_EnableStereoPosition (ptr:void self, uint32_t enable)
 uint32_t SLVolumeItf_IsEnabledStereoPosition (ptr:void self, ptr:uint32_t pEnable)
 uint32_t SLVolumeItf_SetStereoPosition (ptr:void self, int16_t stereoPosition)
 uint32_t SLVolumeItf_GetStereoPosition (ptr:void self, ptr:int16_t pStereoPosition)
+
+uint32_t SLAndroidConfigurationItf_SetConfiguration (ptr:void self, ptr:char configKey, ptr:void pConfigValue, uint32_t valueSize)
+uint32_t SLAndroidConfigurationItf_GetConfiguration (ptr:void self, ptr:char configKey, ptr:uint32_t pValueSize, ptr:void pConfigValue)
+uint32_t SLAndroidConfigurationItf_AcquireJavaProxy (ptr:void self, uint32_t proxyType, ptr:void pProxyObj)
+uint32_t SLAndroidConfigurationItf_ReleaseJavaProxy (ptr:void self, uint32_t proxyType)
+
+uint32_t SLAndroidSimpleBufferQueueItf_Enqueue (ptr:void self, ptr:void pBuffer, uint32_t size)
+uint32_t SLAndroidSimpleBufferQueueItf_Clear (ptr:void self)
+uint32_t SLAndroidSimpleBufferQueueItf_GetState (ptr:void self, ptr:void pState)
+uint32_t SLAndroidSimpleBufferQueueItf_RegisterCallback (ptr:void self, ptr:void callback, ptr:void pContext)

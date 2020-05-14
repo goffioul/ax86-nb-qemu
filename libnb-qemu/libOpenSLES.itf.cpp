@@ -40,4 +40,10 @@ SLresult SLPlayItf_RegisterCallback (SLPlayItf self, void *callback, void *pCont
   return (*self)->RegisterCallback(self, nativeCallback, pContext);
 }
 
+SLresult SLAndroidSimpleBufferQueueItf_RegisterCallback (SLAndroidSimpleBufferQueueItf self, void *callback, void *pContext)
+{
+  slAndroidSimpleBufferQueueCallback nativeCallback = (slAndroidSimpleBufferQueueCallback) get_trampoline(callback, "SLAndroidSimpleBufferQueue_Callback", "vpp");
+  return (*self)->RegisterCallback(self, nativeCallback, pContext);
+}
+
 };

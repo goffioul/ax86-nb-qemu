@@ -1,4 +1,5 @@
 #include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -8,6 +9,8 @@ inline SLresult SLBufferQueueItf_Enqueue (SLBufferQueueItf self, const void *pBu
   { return (*self)->Enqueue(self, pBuffer, size); }
 inline SLresult SLBufferQueueItf_Clear (SLBufferQueueItf self)
   { return (*self)->Clear(self); }
+inline SLresult SLBufferQueueItf_GetState (SLBufferQueueItf self, SLBufferQueueState *pState)
+  { return (*self)->GetState(self, pState); }
 extern SLresult SLBufferQueueItf_RegisterCallback (SLBufferQueueItf self, void *callback, void *pContext);
 
 inline SLresult SLEffectSendItf_EnableEffectSend (SLEffectSendItf self, const void *pAuxEffect, SLboolean enable, SLmillibel initialLevel)
@@ -117,6 +120,23 @@ inline SLresult SLVolumeItf_SetStereoPosition (SLVolumeItf self, SLpermille ster
   { return (*self)->SetStereoPosition(self, stereoPosition); }
 inline SLresult SLVolumeItf_GetStereoPosition (SLVolumeItf self, SLpermille *pStereoPosition)
   { return (*self)->GetStereoPosition(self, pStereoPosition); }
+
+inline SLresult SLAndroidConfigurationItf_SetConfiguration (SLAndroidConfigurationItf self, const SLchar *configKey, const void *pConfigValue, SLuint32 valueSize)
+  { return (*self)->SetConfiguration(self, configKey, pConfigValue, valueSize); }
+inline SLresult SLAndroidConfigurationItf_GetConfiguration (SLAndroidConfigurationItf self, const SLchar *configKey, uint32_t *pValueSize, void *pConfigValue)
+  { return (*self)->GetConfiguration(self, configKey, pValueSize, pConfigValue); }
+inline SLresult SLAndroidConfigurationItf_AcquireJavaProxy (SLAndroidConfigurationItf self, SLuint32 proxyType, jobject *pProxyObj)
+  { return (*self)->AcquireJavaProxy(self, proxyType, pProxyObj); }
+inline SLresult SLAndroidConfigurationItf_ReleaseJavaProxy (SLAndroidConfigurationItf self, SLuint32 proxyType)
+  { return (*self)->ReleaseJavaProxy(self, proxyType); }
+
+inline SLresult SLAndroidSimpleBufferQueueItf_Enqueue (SLAndroidSimpleBufferQueueItf self, const void *pBuffer, SLuint32 size)
+  { return (*self)->Enqueue(self, pBuffer, size); }
+inline SLresult SLAndroidSimpleBufferQueueItf_Clear (SLAndroidSimpleBufferQueueItf self)
+  { return (*self)->Clear(self); }
+inline SLresult SLAndroidSimpleBufferQueueItf_GetState (SLAndroidSimpleBufferQueueItf self, SLAndroidSimpleBufferQueueState *pState)
+  { return (*self)->GetState(self, pState); }
+extern SLresult SLAndroidSimpleBufferQueueItf_RegisterCallback (SLAndroidSimpleBufferQueueItf self, void *callback, void *pContext);
 
 #ifdef __cplusplus
 }

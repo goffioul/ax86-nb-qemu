@@ -1,5 +1,5 @@
 #define LOG_TAG "libnb-qemu"
-#define LOG_NDEBUG 0
+//#define LOG_NDEBUG 0
 
 #include <stdint.h>
 #include <log/log.h>
@@ -31,6 +31,14 @@ void nb_handle_SLBufferQueueItf_Clear(CPUARMState *env) {
     char *sp = g2h(env->regs[13]);
     uint32_t __nb_ret = (uint32_t)SLBufferQueueItf_Clear(
         *(void**)(&sp[0])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_SLBufferQueueItf_GetState(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    uint32_t __nb_ret = (uint32_t)SLBufferQueueItf_GetState(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4])
     );
     env->regs[0] = *(abi_ulong*)(&__nb_ret);
 }
@@ -461,62 +469,141 @@ void nb_handle_SLVolumeItf_GetStereoPosition(CPUARMState *env) {
     );
     env->regs[0] = *(abi_ulong*)(&__nb_ret);
 }
+void nb_handle_SLAndroidConfigurationItf_SetConfiguration(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    uint32_t __nb_ret = (uint32_t)SLAndroidConfigurationItf_SetConfiguration(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4]),
+        *(void**)(&sp[8]),
+        *(uint32_t*)(&sp[12])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_SLAndroidConfigurationItf_GetConfiguration(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    uint32_t __nb_ret = (uint32_t)SLAndroidConfigurationItf_GetConfiguration(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4]),
+        *(void**)(&sp[8]),
+        *(void**)(&sp[12])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_SLAndroidConfigurationItf_AcquireJavaProxy(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    uint32_t __nb_ret = (uint32_t)SLAndroidConfigurationItf_AcquireJavaProxy(
+        *(void**)(&sp[0]),
+        *(uint32_t*)(&sp[4]),
+        *(void**)(&sp[8])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_SLAndroidConfigurationItf_ReleaseJavaProxy(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    uint32_t __nb_ret = (uint32_t)SLAndroidConfigurationItf_ReleaseJavaProxy(
+        *(void**)(&sp[0]),
+        *(uint32_t*)(&sp[4])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_SLAndroidSimpleBufferQueueItf_Enqueue(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    uint32_t __nb_ret = (uint32_t)SLAndroidSimpleBufferQueueItf_Enqueue(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4]),
+        *(uint32_t*)(&sp[8])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_SLAndroidSimpleBufferQueueItf_Clear(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    uint32_t __nb_ret = (uint32_t)SLAndroidSimpleBufferQueueItf_Clear(
+        *(void**)(&sp[0])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_SLAndroidSimpleBufferQueueItf_GetState(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    uint32_t __nb_ret = (uint32_t)SLAndroidSimpleBufferQueueItf_GetState(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
+void nb_handle_SLAndroidSimpleBufferQueueItf_RegisterCallback(CPUARMState *env) {
+    char *sp = g2h(env->regs[13]);
+    uint32_t __nb_ret = (uint32_t)SLAndroidSimpleBufferQueueItf_RegisterCallback(
+        *(void**)(&sp[0]),
+        *(void**)(&sp[4]),
+        *(void**)(&sp[8])
+    );
+    env->regs[0] = *(abi_ulong*)(&__nb_ret);
+}
 __attribute__((visibility("default")))
 void nb_handle_svc(CPUARMState *env, int svc) {
     switch (svc) {
         case 0x0600: ALOGV("slCreateEngine"); nb_handle_slCreateEngine(env); break;
         case 0x0601: ALOGV("SLBufferQueueItf_Enqueue"); nb_handle_SLBufferQueueItf_Enqueue(env); break;
         case 0x0602: ALOGV("SLBufferQueueItf_Clear"); nb_handle_SLBufferQueueItf_Clear(env); break;
-        case 0x0603: ALOGV("SLBufferQueueItf_RegisterCallback"); nb_handle_SLBufferQueueItf_RegisterCallback(env); break;
-        case 0x0604: ALOGV("SLEffectSendItf_EnableEffectSend"); nb_handle_SLEffectSendItf_EnableEffectSend(env); break;
-        case 0x0605: ALOGV("SLEngineItf_CreateAudioPlayer"); nb_handle_SLEngineItf_CreateAudioPlayer(env); break;
-        case 0x0606: ALOGV("SLEngineItf_CreateOutputMix"); nb_handle_SLEngineItf_CreateOutputMix(env); break;
-        case 0x0607: ALOGV("SLEnvironmentalReverbItf_SetEnvironmentalReverbProperties"); nb_handle_SLEnvironmentalReverbItf_SetEnvironmentalReverbProperties(env); break;
-        case 0x0608: ALOGV("SLMuteSoloItf_SetChannelMute"); nb_handle_SLMuteSoloItf_SetChannelMute(env); break;
-        case 0x0609: ALOGV("SLMuteSoloItf_GetChannelMute"); nb_handle_SLMuteSoloItf_GetChannelMute(env); break;
-        case 0x060a: ALOGV("SLMuteSoloItf_SetChannelSolo"); nb_handle_SLMuteSoloItf_SetChannelSolo(env); break;
-        case 0x060b: ALOGV("SLMuteSoloItf_GetChannelSolo"); nb_handle_SLMuteSoloItf_GetChannelSolo(env); break;
-        case 0x060c: ALOGV("SLMuteSoloItf_GetNumChannels"); nb_handle_SLMuteSoloItf_GetNumChannels(env); break;
-        case 0x060d: ALOGV("SLObjectItf_Realize"); nb_handle_SLObjectItf_Realize(env); break;
-        case 0x060e: ALOGV("SLObjectItf_Resume"); nb_handle_SLObjectItf_Resume(env); break;
-        case 0x060f: ALOGV("SLObjectItf_GetState"); nb_handle_SLObjectItf_GetState(env); break;
-        case 0x0610: ALOGV("SLObjectItf_GetInterface"); nb_handle_SLObjectItf_GetInterface(env); break;
-        case 0x0611: ALOGV("SLObjectItf_RegisterCallback"); nb_handle_SLObjectItf_RegisterCallback(env); break;
-        case 0x0612: ALOGV("SLObjectItf_AbortAsyncOperation"); nb_handle_SLObjectItf_AbortAsyncOperation(env); break;
-        case 0x0613: ALOGV("SLObjectItf_Destroy"); nb_handle_SLObjectItf_Destroy(env); break;
-        case 0x0614: ALOGV("SLObjectItf_SetPriority"); nb_handle_SLObjectItf_SetPriority(env); break;
-        case 0x0615: ALOGV("SLObjectItf_GetPriority"); nb_handle_SLObjectItf_GetPriority(env); break;
-        case 0x0616: ALOGV("SLObjectItf_SetLossOfControlInterfaces"); nb_handle_SLObjectItf_SetLossOfControlInterfaces(env); break;
-        case 0x0617: ALOGV("SLPlayItf_SetPlayState"); nb_handle_SLPlayItf_SetPlayState(env); break;
-        case 0x0618: ALOGV("SLPlayItf_GetPlayState"); nb_handle_SLPlayItf_GetPlayState(env); break;
-        case 0x0619: ALOGV("SLPlayItf_GetDuration"); nb_handle_SLPlayItf_GetDuration(env); break;
-        case 0x061a: ALOGV("SLPlayItf_GetPosition"); nb_handle_SLPlayItf_GetPosition(env); break;
-        case 0x061b: ALOGV("SLPlayItf_RegisterCallback"); nb_handle_SLPlayItf_RegisterCallback(env); break;
-        case 0x061c: ALOGV("SLPlayItf_SetCallbackEventsMask"); nb_handle_SLPlayItf_SetCallbackEventsMask(env); break;
-        case 0x061d: ALOGV("SLPlayItf_GetCallbackEventsMask"); nb_handle_SLPlayItf_GetCallbackEventsMask(env); break;
-        case 0x061e: ALOGV("SLPlayItf_SetMarkerPosition"); nb_handle_SLPlayItf_SetMarkerPosition(env); break;
-        case 0x061f: ALOGV("SLPlayItf_ClearMarkerPosition"); nb_handle_SLPlayItf_ClearMarkerPosition(env); break;
-        case 0x0620: ALOGV("SLPlayItf_GetMarkerPosition"); nb_handle_SLPlayItf_GetMarkerPosition(env); break;
-        case 0x0621: ALOGV("SLPlayItf_SetPositionUpdatePeriod"); nb_handle_SLPlayItf_SetPositionUpdatePeriod(env); break;
-        case 0x0622: ALOGV("SLPlayItf_GetPositionUpdatePeriod"); nb_handle_SLPlayItf_GetPositionUpdatePeriod(env); break;
-        case 0x0623: ALOGV("SLPlaybackRateItf_SetRate"); nb_handle_SLPlaybackRateItf_SetRate(env); break;
-        case 0x0624: ALOGV("SLPlaybackRateItf_GetRate"); nb_handle_SLPlaybackRateItf_GetRate(env); break;
-        case 0x0625: ALOGV("SLPlaybackRateItf_SetPropertyConstraints"); nb_handle_SLPlaybackRateItf_SetPropertyConstraints(env); break;
-        case 0x0626: ALOGV("SLPlaybackRateItf_GetProperties"); nb_handle_SLPlaybackRateItf_GetProperties(env); break;
-        case 0x0627: ALOGV("SLPlaybackRateItf_GetCapabilitiesOfRate"); nb_handle_SLPlaybackRateItf_GetCapabilitiesOfRate(env); break;
-        case 0x0628: ALOGV("SLPlaybackRateItf_GetRateRange"); nb_handle_SLPlaybackRateItf_GetRateRange(env); break;
-        case 0x0629: ALOGV("SLSeekItf_SetPosition"); nb_handle_SLSeekItf_SetPosition(env); break;
-        case 0x062a: ALOGV("SLSeekItf_SetLoop"); nb_handle_SLSeekItf_SetLoop(env); break;
-        case 0x062b: ALOGV("SLSeekItf_GetLoop"); nb_handle_SLSeekItf_GetLoop(env); break;
-        case 0x062c: ALOGV("SLVolumeItf_SetVolumeLevel"); nb_handle_SLVolumeItf_SetVolumeLevel(env); break;
-        case 0x062d: ALOGV("SLVolumeItf_GetVolumeLevel"); nb_handle_SLVolumeItf_GetVolumeLevel(env); break;
-        case 0x062e: ALOGV("SLVolumeItf_GetMaxVolumeLevel"); nb_handle_SLVolumeItf_GetMaxVolumeLevel(env); break;
-        case 0x062f: ALOGV("SLVolumeItf_SetMute"); nb_handle_SLVolumeItf_SetMute(env); break;
-        case 0x0630: ALOGV("SLVolumeItf_GetMute"); nb_handle_SLVolumeItf_GetMute(env); break;
-        case 0x0631: ALOGV("SLVolumeItf_EnableStereoPosition"); nb_handle_SLVolumeItf_EnableStereoPosition(env); break;
-        case 0x0632: ALOGV("SLVolumeItf_IsEnabledStereoPosition"); nb_handle_SLVolumeItf_IsEnabledStereoPosition(env); break;
-        case 0x0633: ALOGV("SLVolumeItf_SetStereoPosition"); nb_handle_SLVolumeItf_SetStereoPosition(env); break;
-        case 0x0634: ALOGV("SLVolumeItf_GetStereoPosition"); nb_handle_SLVolumeItf_GetStereoPosition(env); break;
+        case 0x0603: ALOGV("SLBufferQueueItf_GetState"); nb_handle_SLBufferQueueItf_GetState(env); break;
+        case 0x0604: ALOGV("SLBufferQueueItf_RegisterCallback"); nb_handle_SLBufferQueueItf_RegisterCallback(env); break;
+        case 0x0605: ALOGV("SLEffectSendItf_EnableEffectSend"); nb_handle_SLEffectSendItf_EnableEffectSend(env); break;
+        case 0x0606: ALOGV("SLEngineItf_CreateAudioPlayer"); nb_handle_SLEngineItf_CreateAudioPlayer(env); break;
+        case 0x0607: ALOGV("SLEngineItf_CreateOutputMix"); nb_handle_SLEngineItf_CreateOutputMix(env); break;
+        case 0x0608: ALOGV("SLEnvironmentalReverbItf_SetEnvironmentalReverbProperties"); nb_handle_SLEnvironmentalReverbItf_SetEnvironmentalReverbProperties(env); break;
+        case 0x0609: ALOGV("SLMuteSoloItf_SetChannelMute"); nb_handle_SLMuteSoloItf_SetChannelMute(env); break;
+        case 0x060a: ALOGV("SLMuteSoloItf_GetChannelMute"); nb_handle_SLMuteSoloItf_GetChannelMute(env); break;
+        case 0x060b: ALOGV("SLMuteSoloItf_SetChannelSolo"); nb_handle_SLMuteSoloItf_SetChannelSolo(env); break;
+        case 0x060c: ALOGV("SLMuteSoloItf_GetChannelSolo"); nb_handle_SLMuteSoloItf_GetChannelSolo(env); break;
+        case 0x060d: ALOGV("SLMuteSoloItf_GetNumChannels"); nb_handle_SLMuteSoloItf_GetNumChannels(env); break;
+        case 0x060e: ALOGV("SLObjectItf_Realize"); nb_handle_SLObjectItf_Realize(env); break;
+        case 0x060f: ALOGV("SLObjectItf_Resume"); nb_handle_SLObjectItf_Resume(env); break;
+        case 0x0610: ALOGV("SLObjectItf_GetState"); nb_handle_SLObjectItf_GetState(env); break;
+        case 0x0611: ALOGV("SLObjectItf_GetInterface"); nb_handle_SLObjectItf_GetInterface(env); break;
+        case 0x0612: ALOGV("SLObjectItf_RegisterCallback"); nb_handle_SLObjectItf_RegisterCallback(env); break;
+        case 0x0613: ALOGV("SLObjectItf_AbortAsyncOperation"); nb_handle_SLObjectItf_AbortAsyncOperation(env); break;
+        case 0x0614: ALOGV("SLObjectItf_Destroy"); nb_handle_SLObjectItf_Destroy(env); break;
+        case 0x0615: ALOGV("SLObjectItf_SetPriority"); nb_handle_SLObjectItf_SetPriority(env); break;
+        case 0x0616: ALOGV("SLObjectItf_GetPriority"); nb_handle_SLObjectItf_GetPriority(env); break;
+        case 0x0617: ALOGV("SLObjectItf_SetLossOfControlInterfaces"); nb_handle_SLObjectItf_SetLossOfControlInterfaces(env); break;
+        case 0x0618: ALOGV("SLPlayItf_SetPlayState"); nb_handle_SLPlayItf_SetPlayState(env); break;
+        case 0x0619: ALOGV("SLPlayItf_GetPlayState"); nb_handle_SLPlayItf_GetPlayState(env); break;
+        case 0x061a: ALOGV("SLPlayItf_GetDuration"); nb_handle_SLPlayItf_GetDuration(env); break;
+        case 0x061b: ALOGV("SLPlayItf_GetPosition"); nb_handle_SLPlayItf_GetPosition(env); break;
+        case 0x061c: ALOGV("SLPlayItf_RegisterCallback"); nb_handle_SLPlayItf_RegisterCallback(env); break;
+        case 0x061d: ALOGV("SLPlayItf_SetCallbackEventsMask"); nb_handle_SLPlayItf_SetCallbackEventsMask(env); break;
+        case 0x061e: ALOGV("SLPlayItf_GetCallbackEventsMask"); nb_handle_SLPlayItf_GetCallbackEventsMask(env); break;
+        case 0x061f: ALOGV("SLPlayItf_SetMarkerPosition"); nb_handle_SLPlayItf_SetMarkerPosition(env); break;
+        case 0x0620: ALOGV("SLPlayItf_ClearMarkerPosition"); nb_handle_SLPlayItf_ClearMarkerPosition(env); break;
+        case 0x0621: ALOGV("SLPlayItf_GetMarkerPosition"); nb_handle_SLPlayItf_GetMarkerPosition(env); break;
+        case 0x0622: ALOGV("SLPlayItf_SetPositionUpdatePeriod"); nb_handle_SLPlayItf_SetPositionUpdatePeriod(env); break;
+        case 0x0623: ALOGV("SLPlayItf_GetPositionUpdatePeriod"); nb_handle_SLPlayItf_GetPositionUpdatePeriod(env); break;
+        case 0x0624: ALOGV("SLPlaybackRateItf_SetRate"); nb_handle_SLPlaybackRateItf_SetRate(env); break;
+        case 0x0625: ALOGV("SLPlaybackRateItf_GetRate"); nb_handle_SLPlaybackRateItf_GetRate(env); break;
+        case 0x0626: ALOGV("SLPlaybackRateItf_SetPropertyConstraints"); nb_handle_SLPlaybackRateItf_SetPropertyConstraints(env); break;
+        case 0x0627: ALOGV("SLPlaybackRateItf_GetProperties"); nb_handle_SLPlaybackRateItf_GetProperties(env); break;
+        case 0x0628: ALOGV("SLPlaybackRateItf_GetCapabilitiesOfRate"); nb_handle_SLPlaybackRateItf_GetCapabilitiesOfRate(env); break;
+        case 0x0629: ALOGV("SLPlaybackRateItf_GetRateRange"); nb_handle_SLPlaybackRateItf_GetRateRange(env); break;
+        case 0x062a: ALOGV("SLSeekItf_SetPosition"); nb_handle_SLSeekItf_SetPosition(env); break;
+        case 0x062b: ALOGV("SLSeekItf_SetLoop"); nb_handle_SLSeekItf_SetLoop(env); break;
+        case 0x062c: ALOGV("SLSeekItf_GetLoop"); nb_handle_SLSeekItf_GetLoop(env); break;
+        case 0x062d: ALOGV("SLVolumeItf_SetVolumeLevel"); nb_handle_SLVolumeItf_SetVolumeLevel(env); break;
+        case 0x062e: ALOGV("SLVolumeItf_GetVolumeLevel"); nb_handle_SLVolumeItf_GetVolumeLevel(env); break;
+        case 0x062f: ALOGV("SLVolumeItf_GetMaxVolumeLevel"); nb_handle_SLVolumeItf_GetMaxVolumeLevel(env); break;
+        case 0x0630: ALOGV("SLVolumeItf_SetMute"); nb_handle_SLVolumeItf_SetMute(env); break;
+        case 0x0631: ALOGV("SLVolumeItf_GetMute"); nb_handle_SLVolumeItf_GetMute(env); break;
+        case 0x0632: ALOGV("SLVolumeItf_EnableStereoPosition"); nb_handle_SLVolumeItf_EnableStereoPosition(env); break;
+        case 0x0633: ALOGV("SLVolumeItf_IsEnabledStereoPosition"); nb_handle_SLVolumeItf_IsEnabledStereoPosition(env); break;
+        case 0x0634: ALOGV("SLVolumeItf_SetStereoPosition"); nb_handle_SLVolumeItf_SetStereoPosition(env); break;
+        case 0x0635: ALOGV("SLVolumeItf_GetStereoPosition"); nb_handle_SLVolumeItf_GetStereoPosition(env); break;
+        case 0x0636: ALOGV("SLAndroidConfigurationItf_SetConfiguration"); nb_handle_SLAndroidConfigurationItf_SetConfiguration(env); break;
+        case 0x0637: ALOGV("SLAndroidConfigurationItf_GetConfiguration"); nb_handle_SLAndroidConfigurationItf_GetConfiguration(env); break;
+        case 0x0638: ALOGV("SLAndroidConfigurationItf_AcquireJavaProxy"); nb_handle_SLAndroidConfigurationItf_AcquireJavaProxy(env); break;
+        case 0x0639: ALOGV("SLAndroidConfigurationItf_ReleaseJavaProxy"); nb_handle_SLAndroidConfigurationItf_ReleaseJavaProxy(env); break;
+        case 0x063a: ALOGV("SLAndroidSimpleBufferQueueItf_Enqueue"); nb_handle_SLAndroidSimpleBufferQueueItf_Enqueue(env); break;
+        case 0x063b: ALOGV("SLAndroidSimpleBufferQueueItf_Clear"); nb_handle_SLAndroidSimpleBufferQueueItf_Clear(env); break;
+        case 0x063c: ALOGV("SLAndroidSimpleBufferQueueItf_GetState"); nb_handle_SLAndroidSimpleBufferQueueItf_GetState(env); break;
+        case 0x063d: ALOGV("SLAndroidSimpleBufferQueueItf_RegisterCallback"); nb_handle_SLAndroidSimpleBufferQueueItf_RegisterCallback(env); break;
         default: LOG_ALWAYS_FATAL("Unknown SVC %08x", svc); break;
     }
 }
