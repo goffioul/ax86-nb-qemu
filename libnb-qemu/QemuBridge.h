@@ -27,9 +27,17 @@ namespace QemuBridge {
     bool initialize(const std::string& procname, const std::string& tmpdir);
     bool is_supported(const std::string& libpath);
     bool is_path_supported(const std::string& path);
-    void *load_library(const std::string& filename);
+    void *load_library(const std::string& filename, void *ns = nullptr);
     void *get_trampoline(void *lib_handle, const std::string& name, const std::string& shorty);
     const char *get_error();
+    bool init_anonymous_namespace(const char *public_ns_sonames, const char *anon_ns_library_path);
+    void *create_namespace(const char *name,
+                           const char *ld_library_path,
+                           const char *default_library_path,
+                           uint64_t type,
+                           const char *permitted_when_isolated_path,
+                           void *parent_ns);
+    bool link_namespaces(void *from, void *to, const char *shared_libs_sonames);
 }
 
 #endif

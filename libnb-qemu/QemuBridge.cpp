@@ -45,9 +45,17 @@ public:
 public:
     bool initialize(const std::string& procname, const std::string& tmpdir);
     bool is_path_supported(const std::string& path) const;
-    void *load_library(const std::string& filename);
+    void *load_library(const std::string& filename, void *ns);
     void *get_trampoline(void *lib_handle, const std::string& name, const std::string& shorty);
     const char *get_error();
+    bool init_anonymous_namespace(const char *public_ns_sonames, const char *anon_ns_library_path);
+    void *create_namespace(const char *name,
+                           const char *ld_library_path,
+                           const char *default_library_path,
+                           uint64_t type,
+                           const char *permitted_when_isolated_path,
+                           void *parent_ns);
+    bool link_namespaces(void *from, void *to, const char *shared_libs_sonames);
 
 private:
     uint32_t initialize_;
@@ -55,6 +63,9 @@ private:
     uint32_t get_library_symbol_;
     uint32_t allocate_thread_;
     uint32_t get_error_;
+    uint32_t init_anonymous_namespace_;
+    uint32_t create_namespace_;
+    uint32_t link_namespaces_;
 
     std::map<void *, std::shared_ptr<Library>> libraries_;
     std::map<std::string, std::shared_ptr<Library>> named_libraries_;
@@ -76,6 +87,12 @@ bool QemuBridgeImpl::initialize(const std::string& procname, const std::string& 
         ALOGV("QemuBridge::allocate_thread_: %p", reinterpret_cast<void *>(allocate_thread_));
         get_error_ = QemuCore::lookup_symbol("nb_qemu_getError");
         ALOGV("QemuBridge::get_error_: %p", reinterpret_cast<void *>(get_error_));
+        create_namespace_ = QemuCore::lookup_symbol("nb_qemu_createNamespace");
+        ALOGV("QemuBridge::create_namespace_: %p", reinterpret_cast<void *>(create_namespace_));
+        link_namespaces_ = QemuCore::lookup_symbol("nb_qemu_linkNamespaces");
+        ALOGV("QemuBridge::link_namespaces_: %p", reinterpret_cast<void *>(link_namespaces_));
+        init_anonymous_namespace_ = QemuCore::lookup_symbol("nb_qemu_initAnonymousNamespace");
+        ALOGV("QemuBridge::init_anonymous_namespace_: %p", reinterpret_cast<void *>(init_anonymous_namespace_));
         if (initialize_) {
             QemuCpu::get()->call(initialize_);
             return true;
@@ -99,7 +116,7 @@ bool QemuBridgeImpl::is_path_supported(const std::string& path) const
     return true;
 }
 
-void *QemuBridgeImpl::load_library(const std::string& filename)
+void *QemuBridgeImpl::load_library(const std::string& filename, void *ns)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     std::map<std::string, std::shared_ptr<Library>>::const_iterator it = named_libraries_.find(filename);
@@ -115,7 +132,7 @@ void *QemuBridgeImpl::load_library(const std::string& filename)
 
         if (p) {
             p.memcpy(filename.c_str(), length + 1);
-            ret = QemuCpu::get()->call(load_library_, p.get_address());
+            ret = QemuCpu::get()->call(load_library_, p.get_address(), (uint32_t) ns);
         }
 
         if (ret) {
@@ -187,6 +204,43 @@ const char *QemuBridgeImpl::get_error()
   return s_error.c_str();
 }
 
+bool QemuBridgeImpl::init_anonymous_namespace(const char *public_ns_sonames, const char *anon_ns_library_path)
+{
+  return QemuCpu::get()->call(init_anonymous_namespace_, (uint32_t) public_ns_sonames, (uint32_t) anon_ns_library_path);
+}
+
+void *QemuBridgeImpl::create_namespace(const char *name,
+                                       const char *ld_library_path,
+                                       const char *default_library_path,
+                                       uint64_t type,
+                                       const char *permitted_when_isolated_path,
+                                       void *parent_ns)
+{
+  uint32_t ret;
+  union {
+      struct {
+          uint64_t type;
+          const char *permitted_when_isolated_path;
+          void *parent_ns;
+      } args;
+      char data[16];
+  } stack = { .args = { .type = type, .permitted_when_isolated_path = permitted_when_isolated_path, .parent_ns = parent_ns } };
+
+  ret = QemuCpu::get()->call(create_namespace_,
+                             (uint32_t) name,
+                             (uint32_t) ld_library_path,
+                             (uint32_t) default_library_path,
+                             0,
+                             stack.data,
+                             sizeof(stack.data));
+  return (void *) ret;
+}
+
+bool QemuBridgeImpl::link_namespaces(void *from, void *to, const char *shared_libs_sonames)
+{
+  return QemuCpu::get()->call(link_namespaces_, (uint32_t) from, (uint32_t) to, (uint32_t) shared_libs_sonames);
+}
+
 namespace QemuBridge {
 
 bool initialize(const std::string& procname, const std::string& tmpdir)
@@ -214,9 +268,9 @@ bool is_path_supported(const std::string& path)
     return impl_->is_path_supported(path);
 }
 
-void *load_library(const std::string& filename)
+void *load_library(const std::string& filename, void *ns)
 {
-    return impl_->load_library(filename);
+    return impl_->load_library(filename, ns);
 }
 
 void *get_trampoline(void *lib_handle, const std::string& name, const std::string& shorty)
@@ -227,6 +281,26 @@ void *get_trampoline(void *lib_handle, const std::string& name, const std::strin
 const char *get_error()
 {
   return impl_->get_error();
+}
+
+bool init_anonymous_namespace(const char *public_ns_sonames, const char *anon_ns_library_path)
+{
+  return impl_->init_anonymous_namespace(public_ns_sonames, anon_ns_library_path);
+}
+
+void *create_namespace(const char *name,
+                       const char *ld_library_path,
+                       const char *default_library_path,
+                       uint64_t type,
+                       const char *permitted_when_isolated_path,
+                       void *parent_ns)
+{
+  return impl_->create_namespace(name, ld_library_path, default_library_path, type, permitted_when_isolated_path, parent_ns);
+}
+
+bool link_namespaces(void *from, void *to, const char *shared_libs_sonames)
+{
+  return impl_->link_namespaces(from, to, shared_libs_sonames);
 }
 
 }

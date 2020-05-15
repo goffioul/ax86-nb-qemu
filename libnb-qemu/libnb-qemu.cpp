@@ -43,7 +43,7 @@ static bool nb_qemu_initialize(const NativeBridgeRuntimeCallbacks* runtime_cbs, 
 static void *nb_qemu_loadLibrary(const char *libpath, int flag)
 {
     ALOGI("loadLibrary: %s, %d", libpath, flag);
-    return nullptr;
+    return QemuBridge::load_library(libpath);
 }
 
 static void *nb_qemu_getTrampoline(void *handle, const char *name, const char* shorty, uint32_t len)
@@ -97,32 +97,31 @@ static bool nb_qemu_isPathSupported(const char *path)
 static bool nb_qemu_initAnonymousNamespace(const char *public_ns_sonames, const char *anon_ns_library_path)
 {
     ALOGI("initAnonymousNamespace: %s, %s", public_ns_sonames, anon_ns_library_path);
-    return true;
+    return QemuBridge::init_anonymous_namespace(public_ns_sonames, anon_ns_library_path);
 }
 
 static native_bridge_namespace_t *
 nb_qemu_createNamespace(const char *name,
-                   const char *ld_library_path,
-                   const char *default_library_path,
-                   uint64_t type,
-                   const char *permitted_when_isolated_path,
-                   native_bridge_namespace_t *parent_ns)
+                        const char *ld_library_path,
+                        const char *default_library_path,
+                        uint64_t type,
+                        const char *permitted_when_isolated_path,
+                        native_bridge_namespace_t *parent_ns)
 {
     ALOGI("createNamespace: %s, %s, %s, %llu, %s", name, ld_library_path, default_library_path, type, permitted_when_isolated_path);
-    // FIXME
-    return (native_bridge_namespace_t*)3;
+    return (native_bridge_namespace_t *) QemuBridge::create_namespace(name, ld_library_path, default_library_path, type, permitted_when_isolated_path, parent_ns);
 }
 
 static bool nb_qemu_linkNamespaces(native_bridge_namespace_t *from, native_bridge_namespace_t *to, const char *shared_libs_soname)
 {
     ALOGI("linkNamespaces: %p, %p, %s", from, to, shared_libs_soname);
-    return true;
+    return QemuBridge::link_namespaces(from, to, shared_libs_soname);
 }
 
 static void *nb_qemu_loadLibraryExt(const char *libpath, int flag, native_bridge_namespace_t *ns)
 {
     ALOGI("loadLibraryExt: %s, %d, %p", libpath, flag, ns);
-    return QemuBridge::load_library(libpath);
+    return QemuBridge::load_library(libpath, ns);
 }
 
 static native_bridge_namespace_t *nb_qemu_getVendorNamespace()

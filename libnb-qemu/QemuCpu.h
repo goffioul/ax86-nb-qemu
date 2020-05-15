@@ -32,6 +32,8 @@ public:
     uint32_t call(uint32_t addr) const { return call(addr, 0, 0, 0, 0, nullptr, 0); }
     uint32_t call(uint32_t addr, uint32_t arg1) const { return call(addr, arg1, 0, 0, 0, nullptr, 0); }
     uint32_t call(uint32_t addr, uint32_t arg1, uint32_t arg2) const { return call(addr, arg1, arg2, 0, 0, nullptr, 0); }
+    uint32_t call(uint32_t addr, uint32_t arg1, uint32_t arg2, uint32_t arg3) const { return call(addr, arg1, arg2, arg3, 0, nullptr, 0); }
+    uint32_t call(uint32_t addr, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4) const { return call(addr, arg1, arg2, arg3, arg4, nullptr, 0); }
     uint32_t call(uint32_t addr, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4, char *stack, int stack_size) const;
     uint64_t call64(uint32_t addr, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4, char *stack, int stack_size) const;
 
